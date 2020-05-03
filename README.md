@@ -2,8 +2,8 @@
 Generic Data Repositories for Entity Framework Code
 
 # Summary
-There two repositories implemented:
-1. IReadDataRepository - For non tracked entities, use for faster performance when updates not required.
+There are two fully generic repositories implemented:
+1. IReadDataRepository - For non tracked entities, use this for faster performance when updates not required.
 1. IDataRepository - For tracked entities.
 
 # Instructions
