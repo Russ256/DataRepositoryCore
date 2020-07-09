@@ -9,5 +9,10 @@ There are two fully generic repositories implemented:
 # Instructions
 1. Implement IEntity<TKey> on your entities.
 1. Implement IDataContext on your DbContext or derive your context from DataContext.
-1. Add your implementation of IDataContext to the services container.
 1. Add the default repositories to the services container using the extension mehthod AddDataRepositories.
+1. Make sure you use the IDataContext interface when adding your EF context:
+```
+    services.AddEntityFrameworkSqlServer()
+        .AddDbContext<IDataContext, YourDataContext>(options => .....);
+```
+
