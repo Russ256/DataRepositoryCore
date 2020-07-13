@@ -15,4 +15,7 @@ There are two fully generic repositories implemented:
     services.AddEntityFrameworkSqlServer()
         .AddDbContext<IDataContext, YourDataContext>(options => .....);
 ```
-
+1. Inject into you code:
+```
+     public YouClassConstructor(IDataRepository<Customer, Guid> repository)
+```
