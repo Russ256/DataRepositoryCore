@@ -7,8 +7,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DataRepositoryCore", "DataR
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DataRepositoryCore.Abstractions", "DataRepositoryCore.Abstractions\DataRepositoryCore.Abstractions.csproj", "{F5D4B19A-398F-40F3-B821-A9A3566B78E2}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DataRepositoryCore.UnitTests", "DataRepositoryCore.UnitTests\DataRepositoryCore.UnitTests.csproj", "{7F6C3E49-172C-4050-83E4-D90A6751157E}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -23,10 +21,6 @@ Global
 		{F5D4B19A-398F-40F3-B821-A9A3566B78E2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F5D4B19A-398F-40F3-B821-A9A3566B78E2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F5D4B19A-398F-40F3-B821-A9A3566B78E2}.Release|Any CPU.Build.0 = Release|Any CPU
-		{7F6C3E49-172C-4050-83E4-D90A6751157E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{7F6C3E49-172C-4050-83E4-D90A6751157E}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{7F6C3E49-172C-4050-83E4-D90A6751157E}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{7F6C3E49-172C-4050-83E4-D90A6751157E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
