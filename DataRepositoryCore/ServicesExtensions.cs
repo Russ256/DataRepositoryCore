@@ -5,7 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 public static class ServicesExtension
 {
     /// <summary>
-    /// Adds generic respositories.  
+    /// Adds generic repositories.  
     /// Note: An implementation of IDataContext needs to be added to the service collection for these to work.
     /// </summary>
     /// <param name="services"></param>
