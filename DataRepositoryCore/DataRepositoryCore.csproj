@@ -1,0 +1,28 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net7.0</TargetFramework>
+    <Authors>Russell Wilkins</Authors>
+    <Description>Generic Data Repositories for Entity Framework</Description>
+    <Copyright>Russell Wilkins</Copyright>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Version>7.0.8</Version>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <RepositoryUrl>https://github.com/Russ256/DataRepositoryCore</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/Russ256/DataRepositoryCore</PackageProjectUrl>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DebugType>full</DebugType>
+    <DebugSymbols>true</DebugSymbols>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="7.0.8" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\DataRepositoryCore.Abstractions\DataRepositoryCore.Abstractions.csproj" />
+  </ItemGroup>
+
+</Project>
