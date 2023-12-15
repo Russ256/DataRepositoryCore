@@ -1,12 +1,12 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net7.0</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
     <Authors>Russell Wilkins</Authors>
     <Description>Generic Data Repositories for Entity Framework</Description>
     <Copyright>Russell Wilkins</Copyright>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Version>7.0.8</Version>
+    <Version>8.0.0</Version>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <RepositoryUrl>https://github.com/Russ256/DataRepositoryCore</RepositoryUrl>
     <PackageProjectUrl>https://github.com/Russ256/DataRepositoryCore</PackageProjectUrl>
@@ -18,7 +18,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="7.0.8" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.0" />
   </ItemGroup>
 
   <ItemGroup>

@@ -1,13 +1,13 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-	<TargetFramework>net7.0</TargetFramework>
+	<TargetFramework>net8.0</TargetFramework>
 	<RootNamespace>DataRepositoryCore</RootNamespace>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <Authors>Russell Wilkins</Authors>
     <Company></Company>
     <Product>DataRepositoryCore</Product>
-    <Version>7.0.8</Version>
+    <Version>8.0.0</Version>
     <PackageProjectUrl>https://github.com/Russ256/DataRepositoryCore</PackageProjectUrl>
     <RepositoryUrl>https://github.com/Russ256/DataRepositoryCore</RepositoryUrl>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
