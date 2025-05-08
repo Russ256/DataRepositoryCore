@@ -1,5 +1,5 @@
 # DataRepositoryCore
-Generic Data Repositories for Entity Framework Code
+Generic Data Repositories for Entity Framework Core
 
 # Summary
 There are two fully generic repositories implemented:
@@ -17,5 +17,5 @@ There are two fully generic repositories implemented:
 ```
 1. Inject into you code:
 ```
-     public YouClassConstructor(IDataRepository<Customer, Guid> repository)
+     public YourClassConstructor(IDataRepository<Customer, Guid> repository)
 ```
