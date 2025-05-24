@@ -2,20 +2,16 @@
 
 using Microsoft.EntityFrameworkCore;
 
-public abstract class DataContext : DbContext, IDataContext
+public abstract class DataContext(DbContextOptions options) : DbContext(options), IDataContext
 {
-    public DataContext(DbContextOptions options)
-        : base(options)
+    public void AddEntity<TEntity>(TEntity entity) where TEntity : class, IEntity
     {
+        base.Add(entity);
+
     }
 
     public DbSet<T> GetDbSet<T>() where T : class, IEntity
     {
-        return this.Set<T>();
-    }
-
-    public void AddEntity<TEntity>(TEntity entity) where TEntity : class, IEntity
-    {
-        base.Add(entity);
+        return Set<T>();
     }
 }

@@ -24,25 +24,25 @@ public class DataRepository<TEntity, TKey> : ReadDataRepository<TEntity, TKey>, 
     /// <param name="entity"></param>
     public void Add(TEntity entity)
     {
-        this.logger?.LogTrace($"Adding entity id {entity.Id}");
-        this.dataContext.AddEntity(entity);
+        Logger?.LogTrace("Adding entity id {EntityId}", entity.Id);
+        DataContext.AddEntity(entity);
     }
 
     public override IQueryable<TEntity> AsQueryable()
     {
-        this.logger?.LogTrace($"Returning tracked IQuerable");
-        return this.entities.AsQueryable();
+        Logger?.LogTrace("Returning tracked IQueryable");
+        return Entities.AsQueryable();
     }
 
     public void Delete(TEntity entity)
     {
-        this.logger?.LogTrace($"Deleting entity id {entity.Id}");
-        this.entities.Remove(entity);
+        Logger?.LogTrace("Deleting entity id {EntityId}", entity.Id);
+        Entities.Remove(entity);
     }
 
     public ValueTask<TEntity> FindAsync(TKey id, CancellationToken cancellationToken = default)
     {
-        this.logger?.LogTrace($"Finding entity id {id}");
-        return this.entities.FindAsync(new object[] { id }, cancellationToken);
+        Logger?.LogTrace("Finding entity id {EntityId}", id);
+        return Entities.FindAsync(new object[] { id }, cancellationToken);
     }
 }

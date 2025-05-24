@@ -14,6 +14,8 @@ public interface IReadDataRepository<TEntity, TKey>
 
     Task<bool> AnyAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default);
 
+    IAsyncEnumerable<TEntity> AsAsyncEnumerable();
+
     IQueryable<TEntity> AsQueryable();
 
     Task<double> AverageAsync(Expression<Func<TEntity, int>> selector, CancellationToken cancellationToken = default);
@@ -31,6 +33,8 @@ public interface IReadDataRepository<TEntity, TKey>
     Task<TEntity> FirstOrDefaultAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default);
 
     Task<TEntity> FirstOrDefaultAsync(CancellationToken cancellationToken = default);
+
+    Task ForEachAsync(Action<TEntity> action, CancellationToken cancellationToken = default);
 
     IQueryable<TEntity> IgnoreAutoIncludes();
 
@@ -75,8 +79,4 @@ public interface IReadDataRepository<TEntity, TKey>
     IQueryable<TEntity> Where(Expression<Func<TEntity, bool>> predicate);
 
     Task<List<TEntity>> WhereAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default);
-
-    Task ForEachAsync(Action<TEntity> action, CancellationToken cancellationToken = default);
-
-    IAsyncEnumerable<TEntity> AsAsyncEnumerable();
 }
