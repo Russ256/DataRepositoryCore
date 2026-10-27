@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 /// </summary>
 /// <typeparam name="TEntity">The type of entity this repository returns</typeparam>
 /// <typeparam name="TKey">The type of the entity key</typeparam>
-public class DataRepository<TEntity, TKey>(IDataContext dataContext, ILogger<DataRepository<TEntity, TKey>> logger = null)
+public class DataRepository<TEntity, TKey>(IDataContext dataContext, ILogger<DataRepository<TEntity, TKey>>? logger = null)
     : ReadDataRepository<TEntity, TKey>(dataContext, logger), IDataRepository<TEntity, TKey>
     where TEntity : class, IEntity<TKey>
 {
@@ -38,7 +38,7 @@ public class DataRepository<TEntity, TKey>(IDataContext dataContext, ILogger<Dat
         Entities.Remove(entity);
     }
 
-    public ValueTask<TEntity> FindAsync(TKey id, CancellationToken cancellationToken = default)
+    public ValueTask<TEntity?> FindAsync(TKey id, CancellationToken cancellationToken = default)
     {
         Logger?.LogTrace("Finding entity id {EntityId}", id);
         return Entities.FindAsync([id], cancellationToken);

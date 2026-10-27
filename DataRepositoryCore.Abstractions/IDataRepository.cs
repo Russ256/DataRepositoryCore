@@ -10,5 +10,5 @@ public interface IDataRepository<TEntity, TKey> : IReadDataRepository<TEntity, T
 
     void Delete(TEntity entity);
 
-    ValueTask<TEntity> FindAsync(TKey id, CancellationToken cancellationToken = default);
+    ValueTask<TEntity?> FindAsync(TKey id, CancellationToken cancellationToken = default);
 }

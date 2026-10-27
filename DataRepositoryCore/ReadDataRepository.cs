@@ -19,9 +19,9 @@ public class ReadDataRepository<TEntity, TKey> : IReadDataRepository<TEntity, TK
 {
     protected readonly IDataContext DataContext;
     protected readonly DbSet<TEntity> Entities;
-    protected readonly ILogger<ReadDataRepository<TEntity, TKey>> Logger;
+    protected readonly ILogger<ReadDataRepository<TEntity, TKey>>? Logger;
 
-    public ReadDataRepository(IDataContext dataContext, ILogger<ReadDataRepository<TEntity, TKey>> logger = null)
+    public ReadDataRepository(IDataContext dataContext, ILogger<ReadDataRepository<TEntity, TKey>>? logger = null)
     {
         DataContext = dataContext ?? throw new ArgumentNullException(nameof(dataContext));
         Entities = DataContext.GetDbSet<TEntity>();
@@ -79,12 +79,12 @@ public class ReadDataRepository<TEntity, TKey> : IReadDataRepository<TEntity, TK
         return AsQueryable().FirstAsync(cancellationToken);
     }
 
-    public Task<TEntity> FirstOrDefaultAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default)
+    public Task<TEntity?> FirstOrDefaultAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default)
     {
         return AsQueryable().FirstOrDefaultAsync(predicate, cancellationToken);
     }
 
-    public Task<TEntity> FirstOrDefaultAsync(CancellationToken cancellationToken = default)
+    public Task<TEntity?> FirstOrDefaultAsync(CancellationToken cancellationToken = default)
     {
         return AsQueryable().FirstOrDefaultAsync(cancellationToken);
     }
@@ -114,12 +114,12 @@ public class ReadDataRepository<TEntity, TKey> : IReadDataRepository<TEntity, TK
         return AsQueryable().LastAsync(cancellationToken);
     }
 
-    public Task<TEntity> LastOrDefaultAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default)
+    public Task<TEntity?> LastOrDefaultAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default)
     {
         return AsQueryable().LastOrDefaultAsync(predicate, cancellationToken);
     }
 
-    public Task<TEntity> LastOrDefaultAsync(CancellationToken cancellationToken = default)
+    public Task<TEntity?> LastOrDefaultAsync(CancellationToken cancellationToken = default)
     {
         return AsQueryable().LastOrDefaultAsync(cancellationToken);
     }
@@ -130,7 +130,7 @@ public class ReadDataRepository<TEntity, TKey> : IReadDataRepository<TEntity, TK
         return DataContext.Entry(entity).Collection(propertyExpression).LoadAsync(cancellationToken);
     }
 
-    public Task LoadReferenceAsync<TProperty>(TEntity entity, System.Linq.Expressions.Expression<Func<TEntity, TProperty>> propertyExpression, CancellationToken cancellationToken = default) where TProperty : class
+    public Task LoadReferenceAsync<TProperty>(TEntity entity, System.Linq.Expressions.Expression<Func<TEntity, TProperty?>> propertyExpression, CancellationToken cancellationToken = default) where TProperty : class
     {
         return DataContext.Entry(entity).Reference(propertyExpression).LoadAsync(cancellationToken);
     }
@@ -165,12 +165,12 @@ public class ReadDataRepository<TEntity, TKey> : IReadDataRepository<TEntity, TK
         return AsQueryable().SingleAsync(cancellationToken);
     }
 
-    public Task<TEntity> SingleOrDefaultAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default)
+    public Task<TEntity?> SingleOrDefaultAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default)
     {
         return AsQueryable().SingleOrDefaultAsync(predicate, cancellationToken);
     }
 
-    public Task<TEntity> SingleOrDefaultAsync(CancellationToken cancellationToken = default)
+    public Task<TEntity?> SingleOrDefaultAsync(CancellationToken cancellationToken = default)
     {
         return AsQueryable().SingleOrDefaultAsync(cancellationToken);
     }

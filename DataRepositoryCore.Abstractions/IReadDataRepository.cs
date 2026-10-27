@@ -30,9 +30,9 @@ public interface IReadDataRepository<TEntity, TKey>
 
     Task<TEntity> FirstAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default);
 
-    Task<TEntity> FirstOrDefaultAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default);
+    Task<TEntity?> FirstOrDefaultAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default);
 
-    Task<TEntity> FirstOrDefaultAsync(CancellationToken cancellationToken = default);
+    Task<TEntity?> FirstOrDefaultAsync(CancellationToken cancellationToken = default);
 
     Task ForEachAsync(Action<TEntity> action, CancellationToken cancellationToken = default);
 
@@ -44,13 +44,13 @@ public interface IReadDataRepository<TEntity, TKey>
 
     Task<TEntity> LastAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default);
 
-    Task<TEntity> LastOrDefaultAsync(CancellationToken cancellationToken = default);
+    Task<TEntity?> LastOrDefaultAsync(CancellationToken cancellationToken = default);
 
-    Task<TEntity> LastOrDefaultAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default);
+    Task<TEntity?> LastOrDefaultAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default);
 
     Task LoadAsync<TProperty>(TEntity entity, Expression<Func<TEntity, IEnumerable<TProperty>>> propertyExpression, CancellationToken cancellationToken = default) where TProperty : class;
 
-    Task LoadReferenceAsync<TProperty>(TEntity entity, Expression<Func<TEntity, TProperty>> propertyExpression, CancellationToken cancellationToken = default) where TProperty : class;
+    Task LoadReferenceAsync<TProperty>(TEntity entity, Expression<Func<TEntity, TProperty?>> propertyExpression, CancellationToken cancellationToken = default) where TProperty : class;
 
     Task<TResult> MaxAsync<TResult>(Expression<Func<TEntity, TResult>> selector, CancellationToken cancellationToken = default);
 
@@ -64,9 +64,9 @@ public interface IReadDataRepository<TEntity, TKey>
 
     Task<TEntity> SingleAsync(CancellationToken cancellationToken = default);
 
-    Task<TEntity> SingleOrDefaultAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default);
+    Task<TEntity?> SingleOrDefaultAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default);
 
-    Task<TEntity> SingleOrDefaultAsync(CancellationToken cancellationToken = default);
+    Task<TEntity?> SingleOrDefaultAsync(CancellationToken cancellationToken = default);
 
     Task<int> SumAsync(Expression<Func<TEntity, int>> selector, CancellationToken cancellationToken = default);
 
