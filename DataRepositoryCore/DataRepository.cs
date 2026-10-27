@@ -1,5 +1,6 @@
 ﻿namespace DataRepositoryCore;
 
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System.Linq;
 using System.Threading;
@@ -31,7 +32,7 @@ public class DataRepository<TEntity, TKey> : ReadDataRepository<TEntity, TKey>, 
     public override IQueryable<TEntity> AsQueryable()
     {
         Logger?.LogTrace("Returning tracked IQueryable");
-        return Entities.AsQueryable();
+        return Entities.AsQueryable().AsTracking();
     }
 
     public void Delete(TEntity entity)
