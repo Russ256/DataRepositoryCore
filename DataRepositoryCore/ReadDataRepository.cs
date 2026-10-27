@@ -108,26 +108,6 @@ public class ReadDataRepository<TEntity, TKey> : IReadDataRepository<TEntity, TK
         return AsQueryable().IgnoreQueryFilters();
     }
 
-    public Task<TEntity> LastAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default)
-    {
-        return AsQueryable().LastAsync(predicate, cancellationToken);
-    }
-
-    public Task<TEntity> LastAsync(CancellationToken cancellationToken = default)
-    {
-        return AsQueryable().LastAsync(cancellationToken);
-    }
-
-    public Task<TEntity?> LastOrDefaultAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default)
-    {
-        return AsQueryable().LastOrDefaultAsync(predicate, cancellationToken);
-    }
-
-    public Task<TEntity?> LastOrDefaultAsync(CancellationToken cancellationToken = default)
-    {
-        return AsQueryable().LastOrDefaultAsync(cancellationToken);
-    }
-
     public Task LoadAsync<TProperty>(TEntity entity, Expression<Func<TEntity, IEnumerable<TProperty>>> propertyExpression, CancellationToken cancellationToken = default)
                                                                 where TProperty : class
     {

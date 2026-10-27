@@ -4,7 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 public interface IDataRepository<TEntity, TKey> : IReadDataRepository<TEntity, TKey>
-    where TEntity : IEntity<TKey>
+    where TEntity : class, IEntity<TKey>
 {
     void Add(TEntity entity);
 

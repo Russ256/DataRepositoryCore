@@ -8,7 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 public interface IReadDataRepository<TEntity, TKey>
-    where TEntity : IEntity<TKey>
+    where TEntity : class, IEntity<TKey>
 {
     Task<bool> AnyAsync(CancellationToken cancellationToken = default);
 
@@ -39,14 +39,6 @@ public interface IReadDataRepository<TEntity, TKey>
     IQueryable<TEntity> IgnoreAutoIncludes();
 
     IQueryable<TEntity> IgnoreQueryFilters();
-
-    Task<TEntity> LastAsync(CancellationToken cancellationToken = default);
-
-    Task<TEntity> LastAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default);
-
-    Task<TEntity?> LastOrDefaultAsync(CancellationToken cancellationToken = default);
-
-    Task<TEntity?> LastOrDefaultAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default);
 
     Task LoadAsync<TProperty>(TEntity entity, Expression<Func<TEntity, IEnumerable<TProperty>>> propertyExpression, CancellationToken cancellationToken = default) where TProperty : class;
 
