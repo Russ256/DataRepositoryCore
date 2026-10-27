@@ -12,5 +12,6 @@
     <RepositoryUrl>https://github.com/Russ256/DataRepositoryCore</RepositoryUrl>
     <PackageProjectUrl>https://github.com/Russ256/DataRepositoryCore</PackageProjectUrl>
     <RootNamespace>DataRepositoryCore</RootNamespace>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
 </Project>

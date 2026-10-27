@@ -22,25 +22,41 @@ public class DataRepository<TEntity, TKey>(IDataContext dataContext, ILogger<Dat
     /// <param name="entity"></param>
     public void Add(TEntity entity)
     {
-        Logger?.LogTrace("Adding entity id {EntityId}", entity.Id);
+        if (Logger is not null && Logger.IsEnabled(LogLevel.Trace))
+        {
+            Logger.LogTrace("Adding entity id {EntityId}", entity.Id);
+        }
+
         DataContext.AddEntity(entity);
     }
 
     public override IQueryable<TEntity> AsQueryable()
     {
-        Logger?.LogTrace("Returning tracked IQueryable");
+        if (Logger is not null && Logger.IsEnabled(LogLevel.Trace))
+        {
+            Logger.LogTrace("Returning tracked IQueryable");
+        }
+
         return Entities.AsQueryable().AsTracking();
     }
 
     public void Delete(TEntity entity)
     {
-        Logger?.LogTrace("Deleting entity id {EntityId}", entity.Id);
+        if (Logger is not null && Logger.IsEnabled(LogLevel.Trace))
+        {
+            Logger.LogTrace("Deleting entity id {EntityId}", entity.Id);
+        }
+
         Entities.Remove(entity);
     }
 
     public ValueTask<TEntity?> FindAsync(TKey id, CancellationToken cancellationToken = default)
     {
-        Logger?.LogTrace("Finding entity id {EntityId}", id);
+        if (Logger is not null && Logger.IsEnabled(LogLevel.Trace))
+        {
+            Logger.LogTrace("Finding entity id {EntityId}", id);
+        }
+
         return Entities.FindAsync([id], cancellationToken);
     }
 }

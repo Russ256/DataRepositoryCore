@@ -45,7 +45,11 @@ public class ReadDataRepository<TEntity, TKey> : IReadDataRepository<TEntity, TK
 
     public virtual IQueryable<TEntity> AsQueryable()
     {
-        Logger?.LogTrace("Returning untracked IQueryable");
+        if (Logger is not null && Logger.IsEnabled(LogLevel.Trace))
+        {
+            Logger.LogTrace("Returning untracked IQueryable");
+        }
+
         return Entities.AsNoTracking();
     }
 
