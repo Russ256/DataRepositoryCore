@@ -1,8 +1,8 @@
 <Project>
   <PropertyGroup>
-    <Version>10.0.14</Version>
+    <Version>11.0.0-rc.3.26522.148</Version>
     <Nullable>enable</Nullable>
-    <TargetFramework>net10.0</TargetFramework>
+    <TargetFramework>net11.0</TargetFramework>
     <Product>DataRepositoryCore</Product>
     <Authors>Russell Wilkins</Authors>
     <Description>Generic Data Repositories for Entity Framework</Description>
