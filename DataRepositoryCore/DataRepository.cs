@@ -50,6 +50,7 @@ public class DataRepository<TEntity, TKey>(IDataContext dataContext, ILogger<Dat
         Entities.Remove(entity);
     }
 
+    /// <inheritdoc />
     public ValueTask<TEntity?> FindAsync(TKey id, CancellationToken cancellationToken = default)
     {
         if (Logger is not null && Logger.IsEnabled(LogLevel.Trace))
