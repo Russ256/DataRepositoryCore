@@ -4,7 +4,7 @@
 
 - `DataRepositoryCore.Abstractions/` contains entity and repository interfaces.
 - `DataRepositoryCore/` implements EF Core repositories, the data context, and dependency injection registration.
-- `DataRepositoryCore.Tests/` contains TUnit tests using EF Core's in-memory provider. Add tests alongside `RepositoryTests.cs` or in appropriately named test classes.
+- `DataRepositoryCore.Tests/` contains TUnit tests using EF Core's in-memory and SQLite providers. Add tests alongside `RepositoryTests.cs` or in appropriately named test classes.
 - `Directory.Build.props` holds shared framework, nullable, packaging, and compiler settings. The solution is `DataRepositoryCore.sln`.
 
 ## Build, Test, and Development Commands
@@ -32,6 +32,7 @@ This repository is a library, so there is no standalone application to run. Cons
 - Cover observable repository behavior, including tracking differences between read and write repositories, and run `dotnet test DataRepositoryCore.sln` before submitting changes. 
 - No coverage threshold is configured. 
 - The in-memory provider does not establish behavior specific to a relational database.
+- Use a separate in-memory SQLite connection per test for relational query and persistence behavior; keep the connection open for the lifetime of the test database.
 - Use the AAA (Arrange, Act, Assert) pattern for test structure.
 
 ## Commit & Pull Request Guidelines
