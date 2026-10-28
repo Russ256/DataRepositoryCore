@@ -4,6 +4,7 @@
     <TargetFramework>$(ConsumerTargetFramework)</TargetFramework>
     <Nullable>enable</Nullable>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="DataRepositoryCore" Version="$(RepositoryPackageVersion)" />

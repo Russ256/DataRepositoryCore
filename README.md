@@ -95,4 +95,4 @@ Use `LoadAsync(entity, item => item.Children)` for a collection navigation or `L
 
 Install a compatible .NET 11 SDK, then run `dotnet build DataRepositoryCore.sln` and `dotnet test DataRepositoryCore.sln` from the repository root.
 
-To verify the generated NuGet packages from an isolated consumer, run `pwsh -NoProfile -File PackageSmokeTest/run.ps1` (requires PowerShell 7 and access to the configured NuGet feeds). The script packs both libraries, checks their README and XML documentation, and restores and runs a sample against the freshly built packages. It prints the temporary artifact directory for inspection.
+To verify the generated NuGet packages from an isolated consumer, run `pwsh -NoProfile -File PackageSmokeTest/run.ps1` (requires PowerShell 7 and access to the configured NuGet feeds). The script packs both libraries, checks their README and XML documentation, and restores and runs a sample against the freshly built packages. The consumer is created under the repository's ignored `obj/PackageSmokeTest/` directory, so it inherits repository NuGet configuration. The script prints the artifact directory for inspection.

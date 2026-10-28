@@ -6,7 +6,7 @@ $framework = [string]$sharedProperties.Project.PropertyGroup.TargetFramework
 [xml]$repositoryProject = Get-Content (Join-Path $repositoryRoot 'DataRepositoryCore/DataRepositoryCore.csproj') -Raw
 $efReference = $repositoryProject.SelectSingleNode("//PackageReference[@Include='Microsoft.EntityFrameworkCore']")
 $entityFrameworkVersion = $efReference.GetAttribute('Version')
-$runRoot = Join-Path ([System.IO.Path]::GetTempPath()) ("DataRepositoryCore-smoke-" + [guid]::NewGuid())
+$runRoot = Join-Path $repositoryRoot ("obj/PackageSmokeTest/" + [guid]::NewGuid())
 $feed = Join-Path $runRoot 'feed'
 $consumer = Join-Path $runRoot 'consumer'
 $packages = Join-Path $runRoot 'packages'
