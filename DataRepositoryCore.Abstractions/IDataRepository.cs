@@ -3,11 +3,17 @@
 using System.Threading;
 using System.Threading.Tasks;
 
+/// <summary>Provides tracked queries and operations that change entity state.</summary>
+/// <typeparam name="TEntity">The entity type.</typeparam>
+/// <typeparam name="TKey">The entity key type.</typeparam>
+/// <remarks>Changes are persisted when the associated context saves changes.</remarks>
 public interface IDataRepository<TEntity, TKey> : IReadDataRepository<TEntity, TKey>
     where TEntity : class, IEntity<TKey>
 {
+    /// <summary>Adds an entity to the context; saving changes persists it.</summary>
     void Add(TEntity entity);
 
+    /// <summary>Marks an entity for deletion; saving changes persists the deletion.</summary>
     void Delete(TEntity entity);
 
     /// <summary>

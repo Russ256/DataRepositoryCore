@@ -16,10 +16,7 @@ public class DataRepository<TEntity, TKey>(IDataContext dataContext, ILogger<Dat
     where TEntity : class, IEntity<TKey>
 {
 
-    /// <summary>
-    /// Adds the entity to the context.
-    /// </summary>
-    /// <param name="entity"></param>
+    /// <inheritdoc />
     public void Add(TEntity entity)
     {
         if (Logger is not null && Logger.IsEnabled(LogLevel.Trace))
@@ -30,6 +27,7 @@ public class DataRepository<TEntity, TKey>(IDataContext dataContext, ILogger<Dat
         DataContext.AddEntity(entity);
     }
 
+    /// <inheritdoc />
     public override IQueryable<TEntity> AsQueryable()
     {
         if (Logger is not null && Logger.IsEnabled(LogLevel.Trace))
@@ -40,6 +38,7 @@ public class DataRepository<TEntity, TKey>(IDataContext dataContext, ILogger<Dat
         return Entities.AsQueryable().AsTracking();
     }
 
+    /// <inheritdoc />
     public void Delete(TEntity entity)
     {
         if (Logger is not null && Logger.IsEnabled(LogLevel.Trace))
