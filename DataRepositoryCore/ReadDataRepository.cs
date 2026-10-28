@@ -10,18 +10,20 @@ using System.Threading;
 using System.Threading.Tasks;
 
 /// <summary>
-/// Repository for read on data access.  Entities are not tracked.
+/// Repository for read access. Its queries do not track entities by default.
 /// </summary>
 /// <typeparam name="TEntity">The type of entity this repository returns</typeparam>
 /// <typeparam name="TKey">The type of the entity key</typeparam>
 public class ReadDataRepository<TEntity, TKey> : IReadDataRepository<TEntity, TKey>
     where TEntity : class, IEntity<TKey>
 {
-    /// <summary>Stores the repository context or query dependencies.</summary>
+    /// <summary>The context used by this repository.</summary>
     protected readonly IDataContext DataContext;
-    /// <summary>Stores the repository context or query dependencies.</summary>
+
+    /// <summary>The entity set queried by this repository.</summary>
     protected readonly DbSet<TEntity> Entities;
-    /// <summary>Stores the repository context or query dependencies.</summary>
+
+    /// <summary>The optional logger used by this repository.</summary>
     protected readonly ILogger<ReadDataRepository<TEntity, TKey>>? Logger;
 
     /// <summary>Creates a repository using the supplied context and optional logger.</summary>
