@@ -20,13 +20,13 @@ jobs:
           dotnet-version: '11.0.x'
 
       - name: Restore
-        run: dotnet restore DataRepositoryCore.sln
+        run: dotnet restore DataRepositoryCore.slnx
 
       - name: Build
-        run: dotnet build DataRepositoryCore.sln --configuration Release --no-restore
+        run: dotnet build DataRepositoryCore.slnx --configuration Release --no-restore
 
       - name: Test
-        run: dotnet test DataRepositoryCore.sln --configuration Release --no-build
+        run: dotnet test DataRepositoryCore.slnx --configuration Release --no-build
 
       - name: Verify NuGet packages
         shell: pwsh
