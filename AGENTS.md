@@ -5,6 +5,7 @@
 - `DataRepositoryCore.Abstractions/` contains entity and repository interfaces.
 - `DataRepositoryCore/` implements EF Core repositories, the data context, and dependency injection registration.
 - `DataRepositoryCore.Tests/` contains TUnit tests using EF Core's in-memory and SQLite providers. Add tests alongside `RepositoryTests.cs` or in appropriately named test classes.
+- `PackageSmokeTest/` contains an isolated package consumer and a PowerShell script that builds and verifies both NuGet packages.
 - `Directory.Build.props` holds shared framework, nullable, packaging, and compiler settings. The solution is `DataRepositoryCore.sln`.
 
 ## Build, Test, and Development Commands
@@ -14,6 +15,7 @@ The solution targets `net11.0` and currently uses an EF Core 11 release candidat
 - `dotnet restore DataRepositoryCore.sln` restores dependencies.
 - `dotnet build DataRepositoryCore.sln` builds the projects; library builds also generate NuGet packages.
 - `dotnet test DataRepositoryCore.sln` builds and runs the test suite.
+- `pwsh -NoProfile -File PackageSmokeTest/run.ps1` checks package contents and runs an isolated consumer; it requires PowerShell 7 and access to the configured NuGet feeds.
 
 This repository is a library, so there is no standalone application to run. Consumers supply an EF Core context and register repositories with `AddDataRepositories()`.
 
