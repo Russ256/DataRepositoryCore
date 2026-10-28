@@ -9,6 +9,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DataRepositoryCore.Abstract
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution", "Solution", "{19E16042-0B9D-4730-8E22-10D7A0102EB6}"
 	ProjectSection(SolutionItems) = preProject
+		.gitignore = .gitignore
 		AGENTS.md = AGENTS.md
 		Directory.Build.props = Directory.Build.props
 		global.json = global.json
