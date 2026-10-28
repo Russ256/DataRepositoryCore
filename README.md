@@ -85,6 +85,8 @@ public sealed class CustomerService(
 
 `IReadDataRepository` queries are untracked by default: changing a returned entity does not cause that change to be saved automatically. `IDataRepository` queries are tracked by default, so changes to returned entities can be saved through the same context. Queryables remain subject to EF Core query composition and tracking options.
 
+Use `LoadAsync(entity, item => item.Children)` for a collection navigation or `LoadReferenceAsync(entity, item => item.Parent)` for a reference navigation, substituting navigation properties defined on your entity. With the default EF Core implementation, these methods can load navigations on a detached entity returned by the read repository without first attaching it; the entity and loaded data remain untracked. The repository's context must still be alive, and EF Core query filters apply to the load. If you need to save changes to those entities, use tracked queries or explicitly attach them to the context.
+
 `Add` and `Delete` change the context's entity state; they do not save to the database. Call `IDataContext.SaveChangesAsync` to persist those operations and changes to tracked entities.
 
 `FindAsync` is available on `IDataRepository`. It looks up an entity by its EF Core primary key and returns `null` when no entity is found. The entity must have a single-property primary key whose type matches `TKey`; composite primary keys are not supported. EF Core may return an entity already tracked by the context without querying the database.

@@ -59,9 +59,11 @@ public interface IReadDataRepository<TEntity, TKey>
     IQueryable<TEntity> IgnoreQueryFilters();
 
     /// <summary>Explicitly loads a collection navigation for the specified entity.</summary>
+    /// <remarks>The default EF Core implementation can load navigations for a detached entity without attaching it. The repository context must still be usable.</remarks>
     Task LoadAsync<TProperty>(TEntity entity, Expression<Func<TEntity, IEnumerable<TProperty>>> propertyExpression, CancellationToken cancellationToken = default) where TProperty : class;
 
     /// <summary>Explicitly loads a reference navigation for the specified entity.</summary>
+    /// <remarks>The default EF Core implementation can load navigations for a detached entity without attaching it. The repository context must still be usable.</remarks>
     Task LoadReferenceAsync<TProperty>(TEntity entity, Expression<Func<TEntity, TProperty?>> propertyExpression, CancellationToken cancellationToken = default) where TProperty : class;
 
     /// <summary>Returns the maximum entity or selected value in the query.</summary>

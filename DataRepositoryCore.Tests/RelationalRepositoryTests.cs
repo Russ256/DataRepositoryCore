@@ -84,6 +84,60 @@ public class RelationalRepositoryTests
     }
 
     [Test]
+    public async Task ReadRepositoryLoadsCollectionForDetachedEntity()
+    {
+        // Arrange
+        await using SqliteConnection connection = new("Data Source=:memory:");
+        await connection.OpenAsync();
+        await using RelationalContext context = CreateContext(connection);
+        await context.Database.EnsureCreatedAsync();
+        context.Add(new Category { Id = 1, Name = "Books", IsActive = true,
+            Products = [new Product { Id = 2, Name = "Novel" }] });
+        await context.SaveChangesAsync();
+        context.ChangeTracker.Clear();
+        ReadDataRepository<Category, int> repository = new(context);
+        Category category = await repository.SingleAsync();
+        EntityState before = context.Entry(category).State;
+
+        // Act
+        await repository.LoadAsync(category, item => item.Products);
+
+        // Assert
+        await Assert.That(before).IsEqualTo(EntityState.Detached);
+        await Assert.That(category.Products.Count).IsEqualTo(1);
+        await Assert.That(category.Products.Single().Name).IsEqualTo("Novel");
+        await Assert.That(context.Entry(category).State).IsEqualTo(EntityState.Detached);
+        await Assert.That(context.ChangeTracker.Entries().Count()).IsEqualTo(0);
+    }
+
+    [Test]
+    public async Task ReadRepositoryLoadsReferenceForDetachedEntity()
+    {
+        // Arrange
+        await using SqliteConnection connection = new("Data Source=:memory:");
+        await connection.OpenAsync();
+        await using RelationalContext context = CreateContext(connection);
+        await context.Database.EnsureCreatedAsync();
+        context.Add(new Category { Id = 1, Name = "Books", IsActive = true,
+            Products = [new Product { Id = 2, Name = "Novel" }] });
+        await context.SaveChangesAsync();
+        context.ChangeTracker.Clear();
+        ReadDataRepository<Product, int> repository = new(context);
+        Product product = await repository.SingleAsync();
+        EntityState before = context.Entry(product).State;
+
+        // Act
+        await repository.LoadReferenceAsync(product, item => item.Category);
+
+        // Assert
+        await Assert.That(before).IsEqualTo(EntityState.Detached);
+        await Assert.That(product.Category).IsNotNull();
+        await Assert.That(product.Category!.Name).IsEqualTo("Books");
+        await Assert.That(context.Entry(product).State).IsEqualTo(EntityState.Detached);
+        await Assert.That(context.ChangeTracker.Entries().Count()).IsEqualTo(0);
+    }
+
+    [Test]
     public async Task WritesPersistAcrossContextsOnlyAfterSave()
     {
         // Arrange
