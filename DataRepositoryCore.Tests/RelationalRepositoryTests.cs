@@ -138,6 +138,38 @@ public class RelationalRepositoryTests
     }
 
     [Test]
+    public async Task IgnoreAutoIncludesSuppressesConfiguredNavigation()
+    {
+        // Arrange
+        await using SqliteConnection connection = new("Data Source=:memory:");
+        await connection.OpenAsync();
+        DbContextOptions<AutoIncludeContext> options = new DbContextOptionsBuilder<AutoIncludeContext>()
+            .UseSqlite(connection).Options;
+        await using AutoIncludeContext context = new(options);
+        await context.Database.EnsureCreatedAsync();
+        context.Add(new Category
+        {
+            Id = 1,
+            Name = "Books",
+            IsActive = true,
+            Products = [new Product { Id = 2, Name = "Novel" }]
+        });
+        await context.SaveChangesAsync();
+        context.ChangeTracker.Clear();
+        ReadDataRepository<Category, int> repository = new(context);
+
+        // Act
+        Category included = await repository.SingleAsync();
+        Category ignored = await repository.IgnoreAutoIncludes().SingleAsync();
+
+        // Assert
+        await Assert.That(included.Products.Count).IsEqualTo(1);
+        await Assert.That(included.Products.Single().Name).IsEqualTo("Novel");
+        await Assert.That(ignored.Products.Count).IsEqualTo(0);
+        await Assert.That(context.ChangeTracker.Entries().Count()).IsEqualTo(0);
+    }
+
+    [Test]
     public async Task WritesPersistAcrossContextsOnlyAfterSave()
     {
         // Arrange
@@ -180,6 +212,16 @@ public class RelationalRepositoryTests
         public string Name { get; set; } = string.Empty;
         public int CategoryId { get; set; }
         public Category? Category { get; set; }
+    }
+
+    private sealed class AutoIncludeContext(DbContextOptions<AutoIncludeContext> options) : DataContext(options)
+    {
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<Category>().HasMany(category => category.Products)
+                .WithOne(product => product.Category).HasForeignKey(product => product.CategoryId);
+            modelBuilder.Entity<Category>().Navigation(category => category.Products).AutoInclude();
+        }
     }
 
     private sealed class RelationalContext(DbContextOptions<RelationalContext> options) : DataContext(options)
