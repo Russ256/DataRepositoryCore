@@ -1,0 +1,17 @@
+<Solution>
+  <Configurations>
+    <Platform Name="Any CPU" />
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Folder Name="/Solution/">
+    <File Path=".gitignore" />
+    <File Path="AGENTS.md" />
+    <File Path="Directory.Build.props" />
+    <File Path="global.json" />
+    <File Path="README.md" />
+  </Folder>
+  <Project Path="DataRepositoryCore.Abstractions/DataRepositoryCore.Abstractions.csproj" />
+  <Project Path="DataRepositoryCore.Tests/DataRepositoryCore.Tests.csproj" />
+  <Project Path="DataRepositoryCore/DataRepositoryCore.csproj" />
+</Solution>
