@@ -31,6 +31,7 @@ public class RelationalRepositoryTests
         Category[] matching = await repository.Where(category => category.Name.StartsWith("Vis")).ToArrayAsync();
         int visibleCount = await repository.CountAsync();
         int allCount = await repository.IgnoreQueryFilters().CountAsync();
+        Category hidden = await repository.IgnoreQueryFilters().SingleAsync(category => category.Id == 2);
         int trackedCount = context.ChangeTracker.Entries().Count();
 
         // Assert
@@ -39,6 +40,7 @@ public class RelationalRepositoryTests
         await Assert.That(matching[0].Name).IsEqualTo("Visible");
         await Assert.That(visibleCount).IsEqualTo(1);
         await Assert.That(allCount).IsEqualTo(2);
+        await Assert.That(hidden.Name).IsEqualTo("Hidden");
         await Assert.That(trackedCount).IsEqualTo(0);
     }
 
@@ -62,16 +64,21 @@ public class RelationalRepositoryTests
         DataRepository<Category, int> categories = new(context);
         DataRepository<Product, int> products = new(context);
         Category category = await categories.SingleAsync();
+        bool collectionLoadedBefore = context.Entry(category).Collection(item => item.Products).IsLoaded;
 
         // Act
         await categories.LoadAsync(category, item => item.Products);
         context.ChangeTracker.Clear();
         Product product = await products.SingleAsync();
+        bool referenceLoadedBefore = context.Entry(product).Reference(item => item.Category).IsLoaded;
         await products.LoadReferenceAsync(product, item => item.Category);
 
         // Assert
+        await Assert.That(collectionLoadedBefore).IsFalse();
         await Assert.That(category.Products.Count).IsEqualTo(1);
         await Assert.That(category.Products.Single().Name).IsEqualTo("Novel");
+        await Assert.That(referenceLoadedBefore).IsFalse();
+        await Assert.That(context.Entry(product).Reference(item => item.Category).IsLoaded).IsTrue();
         await Assert.That(product.Category).IsNotNull();
         await Assert.That(product.Category!.Name).IsEqualTo("Books");
     }

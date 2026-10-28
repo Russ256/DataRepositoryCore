@@ -2,6 +2,7 @@ namespace DataRepositoryCore;
 
 using System;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -22,7 +23,7 @@ public class RepositoryTests
     }
 
     [Test]
-    public async Task ReadQueriesFilterAndAggregateWithoutTracking()
+    public async Task ReadQueriesFilterWithoutTracking()
     {
         // Arrange
         await using TestContext context = CreateContext();
@@ -36,13 +37,7 @@ public class RepositoryTests
         bool hasThirty = await repository.AnyAsync(x => x.Value == 30);
         int count = await repository.CountAsync();
         int filteredCount = await repository.CountAsync(x => x.Value > 10);
-        double average = await repository.AverageAsync(x => x.Value);
-        int sum = await repository.SumAsync(x => x.Value);
-        int min = await repository.MinAsync(x => x.Value);
-        int max = await repository.MaxAsync(x => x.Value);
         Item single = await repository.SingleAsync(x => x.Value == 20);
-        Item? firstMissing = await repository.FirstOrDefaultAsync(x => x.Value == 30);
-        Item? singleMissing = await repository.SingleOrDefaultAsync(x => x.Value == 30);
         int filteredResults = (await repository.WhereAsync(x => x.Value > 10)).Count;
         int arrayLength = (await repository.ToArrayAsync()).Length;
         int trackedCount = context.ChangeTracker.Entries().Count();
@@ -52,16 +47,96 @@ public class RepositoryTests
         await Assert.That(hasThirty).IsFalse();
         await Assert.That(count).IsEqualTo(2);
         await Assert.That(filteredCount).IsEqualTo(1);
+        await Assert.That(single.Id).IsEqualTo(2);
+        await Assert.That(filteredResults).IsEqualTo(1);
+        await Assert.That(arrayLength).IsEqualTo(2);
+        await Assert.That(trackedCount).IsEqualTo(0);
+    }
+
+    [Test]
+    public async Task AggregateQueriesReturnExpectedValues()
+    {
+        // Arrange
+        await using TestContext context = CreateContext();
+        context.AddRange(new Item { Id = 1, Value = 10 }, new Item { Id = 2, Value = 20 });
+        await context.SaveChangesAsync();
+        ReadDataRepository<Item, int> repository = new(context);
+
+        // Act
+        double average = await repository.AverageAsync(x => x.Value);
+        int sum = await repository.SumAsync(x => x.Value);
+        int min = await repository.MinAsync(x => x.Value);
+        int max = await repository.MaxAsync(x => x.Value);
+
+        // Assert
         await Assert.That(average).IsEqualTo(15d);
         await Assert.That(sum).IsEqualTo(30);
         await Assert.That(min).IsEqualTo(10);
         await Assert.That(max).IsEqualTo(20);
-        await Assert.That(single.Id).IsEqualTo(2);
-        await Assert.That(firstMissing).IsNull();
-        await Assert.That(singleMissing).IsNull();
-        await Assert.That(filteredResults).IsEqualTo(1);
-        await Assert.That(arrayLength).IsEqualTo(2);
-        await Assert.That(trackedCount).IsEqualTo(0);
+    }
+
+    [Test]
+    public async Task EmptyQueriesReturnNullOrThrowAsAppropriate()
+    {
+        // Arrange
+        await using TestContext context = CreateContext();
+        ReadDataRepository<Item, int> repository = new(context);
+
+        // Act
+        Item? first = await repository.FirstOrDefaultAsync();
+        Item? single = await repository.SingleOrDefaultAsync();
+
+        // Assert
+        await Assert.That(first).IsNull();
+        await Assert.That(single).IsNull();
+        await Assert.That(async () => await repository.FirstAsync()).Throws<InvalidOperationException>();
+        await Assert.That(async () => await repository.SingleAsync()).Throws<InvalidOperationException>();
+    }
+
+    [Test]
+    public async Task SingleQueriesRejectMultipleMatches()
+    {
+        // Arrange
+        await using TestContext context = CreateContext();
+        context.AddRange(new Item { Id = 1, Value = 10 }, new Item { Id = 2, Value = 10 });
+        await context.SaveChangesAsync();
+        ReadDataRepository<Item, int> repository = new(context);
+
+        // Act and assert
+        await Assert.That(async () => await repository.SingleAsync(x => x.Value == 10)).Throws<InvalidOperationException>();
+        await Assert.That(async () => await repository.SingleOrDefaultAsync(x => x.Value == 10)).Throws<InvalidOperationException>();
+    }
+
+    [Test]
+    public async Task QueryHonorsCancelledToken()
+    {
+        // Arrange
+        await using TestContext context = CreateContext();
+        ReadDataRepository<Item, int> repository = new(context);
+        using CancellationTokenSource cancellation = new();
+        cancellation.Cancel();
+
+        // Act and assert
+        await Assert.That(async () => await repository.ToListAsync(cancellation.Token)).Throws<OperationCanceledException>();
+    }
+
+    [Test]
+    public async Task FindReturnsAlreadyTrackedInstance()
+    {
+        // Arrange
+        await using TestContext context = CreateContext();
+        Item item = new() { Id = 1, Value = 10 };
+        context.Add(item);
+        await context.SaveChangesAsync();
+        item.Value = 20;
+        DataRepository<Item, int> repository = new(context);
+
+        // Act
+        Item? found = await repository.FindAsync(1);
+
+        // Assert
+        await Assert.That(ReferenceEquals(item, found)).IsTrue();
+        await Assert.That(found!.Value).IsEqualTo(20);
     }
 
     [Test]
