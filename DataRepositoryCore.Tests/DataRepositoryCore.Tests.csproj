@@ -6,9 +6,9 @@
     <IsTestProject>true</IsTestProject>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="11.0.0-rc.3.26522.148" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="11.0.0-rc.3.26522.148" />
-    <PackageReference Include="TUnit" Version="1.76.28" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="11.0.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="11.0.0" />
+    <PackageReference Include="TUnit" Version="1.81.16" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\DataRepositoryCore\DataRepositoryCore.csproj" />

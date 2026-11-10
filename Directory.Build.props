@@ -1,6 +1,6 @@
 <Project>
   <PropertyGroup>
-    <Version>11.0.0-rc.3.26522.148</Version>
+    <Version>11.0.0</Version>
     <Nullable>enable</Nullable>
     <TargetFramework>net11.0</TargetFramework>
     <Product>DataRepositoryCore</Product>
