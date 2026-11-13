@@ -37,19 +37,19 @@ public class ReadDataRepository<TEntity, TKey> : IReadDataRepository<TEntity, TK
     /// <inheritdoc />
     public Task<bool> AnyAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default)
     {
-        return AsQueryable().Where(predicate).AnyAsync(cancellationToken);
+        return Query().AnyAsync(predicate, cancellationToken);
     }
 
     /// <inheritdoc />
     public Task<bool> AnyAsync(CancellationToken cancellationToken = default)
     {
-        return AsQueryable().AnyAsync(cancellationToken);
+        return Query().AnyAsync(cancellationToken);
     }
 
     /// <inheritdoc />
     public IAsyncEnumerable<TEntity> AsAsyncEnumerable()
     {
-        return AsQueryable().AsAsyncEnumerable();
+        return Query().AsAsyncEnumerable();
     }
 
     /// <inheritdoc />
@@ -64,57 +64,63 @@ public class ReadDataRepository<TEntity, TKey> : IReadDataRepository<TEntity, TK
     }
 
     /// <inheritdoc />
+    public IRepositoryQuery<TEntity> Query()
+    {
+        return new RepositoryQuery<TEntity>(AsQueryable());
+    }
+
+    /// <inheritdoc />
     public Task<double> AverageAsync(Expression<Func<TEntity, int>> selector, CancellationToken cancellationToken = default)
     {
-        return AsQueryable().AverageAsync(selector, cancellationToken);
+        return Query().AverageAsync(selector, cancellationToken);
     }
 
     /// <inheritdoc />
     public Task<bool> ContainsAsync(TEntity entity, CancellationToken cancellationToken = default)
     {
-        return AsQueryable().ContainsAsync(entity, cancellationToken);
+        return Query().ContainsAsync(entity, cancellationToken);
     }
 
     /// <inheritdoc />
     public Task<int> CountAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default)
     {
-        return AsQueryable().CountAsync(predicate, cancellationToken);
+        return Query().CountAsync(predicate, cancellationToken);
     }
 
     /// <inheritdoc />
     public Task<int> CountAsync(CancellationToken cancellationToken = default)
     {
-        return AsQueryable().CountAsync(cancellationToken);
+        return Query().CountAsync(cancellationToken);
     }
 
     /// <inheritdoc />
     public Task<TEntity> FirstAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default)
     {
-        return AsQueryable().FirstAsync(predicate, cancellationToken);
+        return Query().FirstAsync(predicate, cancellationToken);
     }
 
     /// <inheritdoc />
     public Task<TEntity> FirstAsync(CancellationToken cancellationToken = default)
     {
-        return AsQueryable().FirstAsync(cancellationToken);
+        return Query().FirstAsync(cancellationToken);
     }
 
     /// <inheritdoc />
     public Task<TEntity?> FirstOrDefaultAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default)
     {
-        return AsQueryable().FirstOrDefaultAsync(predicate, cancellationToken);
+        return Query().FirstOrDefaultAsync(predicate, cancellationToken);
     }
 
     /// <inheritdoc />
     public Task<TEntity?> FirstOrDefaultAsync(CancellationToken cancellationToken = default)
     {
-        return AsQueryable().FirstOrDefaultAsync(cancellationToken);
+        return Query().FirstOrDefaultAsync(cancellationToken);
     }
 
     /// <inheritdoc />
     public Task ForEachAsync(Action<TEntity> action, CancellationToken cancellationToken = default)
     {
-        return AsQueryable().ForEachAsync(action, cancellationToken);
+        return Query().ForEachAsync(action, cancellationToken);
     }
 
     /// <inheritdoc />
@@ -132,7 +138,7 @@ public class ReadDataRepository<TEntity, TKey> : IReadDataRepository<TEntity, TK
     /// <inheritdoc />
     public IIncludableRepositoryQuery<TEntity, TProperty> Include<TProperty>(Expression<Func<TEntity, TProperty>> navigation)
     {
-        return new IncludableRepositoryQuery<TEntity, TProperty>(AsQueryable().Include(navigation));
+        return Query().Include(navigation);
     }
 
     /// <inheritdoc />
@@ -151,73 +157,73 @@ public class ReadDataRepository<TEntity, TKey> : IReadDataRepository<TEntity, TK
     /// <inheritdoc />
     public Task<TEntity> MaxAsync(CancellationToken cancellationToken = default)
     {
-        return AsQueryable().MaxAsync(cancellationToken);
+        return Query().MaxAsync(cancellationToken);
     }
 
     /// <inheritdoc />
     public Task<TResult> MaxAsync<TResult>(Expression<Func<TEntity, TResult>> selector, CancellationToken cancellationToken = default)
     {
-        return AsQueryable().MaxAsync(selector, cancellationToken);
+        return Query().MaxAsync(selector, cancellationToken);
     }
 
     /// <inheritdoc />
     public Task<TEntity> MinAsync(CancellationToken cancellationToken = default)
     {
-        return AsQueryable().MinAsync(cancellationToken);
+        return Query().MinAsync(cancellationToken);
     }
 
     /// <inheritdoc />
     public Task<TResult> MinAsync<TResult>(Expression<Func<TEntity, TResult>> selector, CancellationToken cancellationToken = default)
     {
-        return AsQueryable().MinAsync(selector, cancellationToken);
+        return Query().MinAsync(selector, cancellationToken);
     }
 
     /// <inheritdoc />
     public Task<TEntity> SingleAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default)
     {
-        return AsQueryable().SingleAsync(predicate, cancellationToken);
+        return Query().SingleAsync(predicate, cancellationToken);
     }
 
     /// <inheritdoc />
     public Task<TEntity> SingleAsync(CancellationToken cancellationToken = default)
     {
-        return AsQueryable().SingleAsync(cancellationToken);
+        return Query().SingleAsync(cancellationToken);
     }
 
     /// <inheritdoc />
     public Task<TEntity?> SingleOrDefaultAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default)
     {
-        return AsQueryable().SingleOrDefaultAsync(predicate, cancellationToken);
+        return Query().SingleOrDefaultAsync(predicate, cancellationToken);
     }
 
     /// <inheritdoc />
     public Task<TEntity?> SingleOrDefaultAsync(CancellationToken cancellationToken = default)
     {
-        return AsQueryable().SingleOrDefaultAsync(cancellationToken);
+        return Query().SingleOrDefaultAsync(cancellationToken);
     }
 
     /// <inheritdoc />
     public Task<int> SumAsync(Expression<Func<TEntity, int>> selector, CancellationToken cancellationToken = default)
     {
-        return AsQueryable().SumAsync(selector, cancellationToken);
+        return Query().SumAsync(selector, cancellationToken);
     }
 
     /// <inheritdoc />
     public Task<TEntity[]> ToArrayAsync(CancellationToken cancellationToken = default)
     {
-        return AsQueryable().ToArrayAsync(cancellationToken);
+        return Query().ToArrayAsync(cancellationToken);
     }
 
     /// <inheritdoc />
     public Task<List<TEntity>> ToListAsync(CancellationToken cancellationToken = default)
     {
-        return AsQueryable().ToListAsync(cancellationToken);
+        return Query().ToListAsync(cancellationToken);
     }
 
     /// <inheritdoc />
     public string ToQueryString()
     {
-        return AsQueryable().ToQueryString();
+        return Query().ToQueryString();
     }
 
     /// <inheritdoc />
@@ -229,6 +235,6 @@ public class ReadDataRepository<TEntity, TKey> : IReadDataRepository<TEntity, TK
     /// <inheritdoc />
     public Task<List<TEntity>> WhereAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default)
     {
-        return Where(predicate).ToListAsync(cancellationToken);
+        return Query().Where(predicate).ToListAsync(cancellationToken);
     }
 }

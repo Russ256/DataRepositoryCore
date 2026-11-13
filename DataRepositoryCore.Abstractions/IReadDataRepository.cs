@@ -25,6 +25,9 @@ public interface IReadDataRepository<TEntity, TKey>
     /// <summary>Returns a composable query for entities.</summary>
     IQueryable<TEntity> AsQueryable();
 
+    /// <summary>Returns a composable query that needs no EF Core extension methods.</summary>
+    IRepositoryQuery<TEntity> Query();
+
     /// <summary>Calculates the average of the selected integer values.</summary>
     Task<double> AverageAsync(Expression<Func<TEntity, int>> selector, CancellationToken cancellationToken = default);
 

@@ -1,53 +1,35 @@
 namespace DataRepositoryCore;
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 
-internal class RepositoryQuery<TEntity>(IQueryable<TEntity> query) : IRepositoryQuery<TEntity>
-    where TEntity : class
+internal class RepositoryQuery<TEntity>(IQueryable<TEntity> query)
+    : RepositoryResultQuery<TEntity>(query), IRepositoryQuery<TEntity> where TEntity : class
 {
     public IIncludableRepositoryQuery<TEntity, TProperty> Include<TProperty>(Expression<Func<TEntity, TProperty>> navigation)
     {
-        return new IncludableRepositoryQuery<TEntity, TProperty>(query.Include(navigation));
+        return new IncludableRepositoryQuery<TEntity, TProperty>(Query.Include(navigation));
     }
 
-    public IRepositoryQuery<TEntity> Where(Expression<Func<TEntity, bool>> predicate)
+    public new IRepositoryQuery<TEntity> Where(Expression<Func<TEntity, bool>> predicate)
     {
-        return new RepositoryQuery<TEntity>(query.Where(predicate));
+        return new RepositoryQuery<TEntity>(Query.Where(predicate));
     }
 
-    public Task<TEntity> SingleAsync(CancellationToken cancellationToken = default)
+    public new IRepositoryQuery<TEntity> Skip(int count)
     {
-        return query.SingleAsync(cancellationToken);
+        return new RepositoryQuery<TEntity>(Query.Skip(count));
     }
 
-    public Task<TEntity> SingleAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default)
+    public new IRepositoryQuery<TEntity> Take(int count)
     {
-        return query.SingleAsync(predicate, cancellationToken);
+        return new RepositoryQuery<TEntity>(Query.Take(count));
     }
 
-    public Task<TEntity?> SingleOrDefaultAsync(CancellationToken cancellationToken = default)
+    public new IRepositoryQuery<TEntity> Distinct()
     {
-        return query.SingleOrDefaultAsync(cancellationToken);
-    }
-
-    public Task<TEntity?> SingleOrDefaultAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default)
-    {
-        return query.SingleOrDefaultAsync(predicate, cancellationToken);
-    }
-
-    public Task<List<TEntity>> ToListAsync(CancellationToken cancellationToken = default)
-    {
-        return query.ToListAsync(cancellationToken);
-    }
-
-    public Task<TEntity[]> ToArrayAsync(CancellationToken cancellationToken = default)
-    {
-        return query.ToArrayAsync(cancellationToken);
+        return new RepositoryQuery<TEntity>(Query.Distinct());
     }
 }

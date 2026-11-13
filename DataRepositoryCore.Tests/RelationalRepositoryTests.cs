@@ -2,12 +2,151 @@ namespace DataRepositoryCore;
 
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 
 public class RelationalRepositoryTests
 {
+    [Test]
+    public async Task QuerySupportsChecksCountsAndScalarProjection()
+    {
+        // Arrange
+        await using SqliteConnection connection = new("Data Source=:memory:");
+        await connection.OpenAsync();
+        await using RelationalContext context = CreateContext(connection);
+        await context.Database.EnsureCreatedAsync();
+        context.AddRange(new Category { Id = 1, Name = "Books", IsActive = true },
+            new Category { Id = 2, Name = "Music", IsActive = true },
+            new Category { Id = 3, Name = "Hidden", IsActive = false });
+        await context.SaveChangesAsync();
+        context.ChangeTracker.Clear();
+        IReadDataRepository<Category, int> repository = new ReadDataRepository<Category, int>(context);
+
+        // Act
+        IRepositoryQuery<Category> query = repository.Query();
+        IRepositoryResultQuery<int> ids = query.Select(item => item.Id);
+        bool any = await ids.AnyAsync();
+        bool missing = await ids.AnyAsync(id => id == 99);
+        bool all = await ids.AllAsync(id => id > 0);
+        int count = await ids.CountAsync();
+        int matchingCount = await ids.CountAsync(id => id == 1);
+        long longCount = await ids.LongCountAsync();
+        long matchingLongCount = await ids.LongCountAsync(id => id == 1);
+        bool contains = await ids.ContainsAsync(2);
+        int sum = await ids.SumAsync(id => id);
+        double average = await ids.AverageAsync(id => id);
+        int min = await ids.MinAsync();
+        int max = await ids.MaxAsync();
+        int selectedMin = await query.MinAsync(item => item.Id);
+        int selectedMax = await query.MaxAsync(item => item.Id);
+
+        // Assert
+        await Assert.That(any).IsTrue();
+        await Assert.That(missing).IsFalse();
+        await Assert.That(all).IsTrue();
+        await Assert.That(count).IsEqualTo(2);
+        await Assert.That(matchingCount).IsEqualTo(1);
+        await Assert.That(longCount).IsEqualTo(2L);
+        await Assert.That(matchingLongCount).IsEqualTo(1L);
+        await Assert.That(contains).IsTrue();
+        await Assert.That(sum).IsEqualTo(3);
+        await Assert.That(average).IsEqualTo(1.5);
+        await Assert.That(min).IsEqualTo(1);
+        await Assert.That(max).IsEqualTo(2);
+        await Assert.That(selectedMin).IsEqualTo(1);
+        await Assert.That(selectedMax).IsEqualTo(2);
+        await Assert.That(context.ChangeTracker.Entries().Count()).IsEqualTo(0);
+    }
+
+    [Test]
+    public async Task QueryCompositionSupportsDtoProjectionPagingAndIndependentBranches()
+    {
+        // Arrange
+        await using SqliteConnection connection = new("Data Source=:memory:");
+        await connection.OpenAsync();
+        await using RelationalContext context = CreateContext(connection);
+        await context.Database.EnsureCreatedAsync();
+        context.AddRange(new Category { Id = 1, Name = "Books", IsActive = true },
+            new Category { Id = 2, Name = "Books", IsActive = true });
+        await context.SaveChangesAsync();
+        context.ChangeTracker.Clear();
+        IReadDataRepository<Category, int> repository = new ReadDataRepository<Category, int>(context);
+
+        // Act
+        IRepositoryQuery<Category> original = repository.Query();
+        IRepositoryQuery<Category> branch = original.Where(item => item.Id == 1)
+            .Skip(0).Take(1).Distinct();
+        Category included = await branch.Include(item => item.Products).SingleAsync();
+        CategorySummary summary = await branch.Select(item => new CategorySummary(item.Id, item.Name)).SingleAsync();
+        string[] names = await original.Select(item => item.Name).Distinct().ToArrayAsync();
+        List<int> ids = await original.Select(item => item.Id).Where(id => id == 2)
+            .Skip(0).Take(1).Distinct().ToListAsync();
+        int skippedCount = await original.Skip(1).CountAsync();
+        int originalCount = await original.CountAsync();
+        int streamedSum = 0;
+        await foreach (int id in original.Select(item => item.Id).AsAsyncEnumerable())
+        {
+            streamedSum += id;
+        }
+        int actionSum = 0;
+        await original.Select(item => item.Id).ForEachAsync(id => actionSum += id);
+
+        // Assert
+        await Assert.That(included.Id).IsEqualTo(1);
+        await Assert.That(summary).IsEqualTo(new CategorySummary(1, "Books"));
+        await Assert.That(names.Length).IsEqualTo(1);
+        await Assert.That(names[0]).IsEqualTo("Books");
+        await Assert.That(ids.Single()).IsEqualTo(2);
+        await Assert.That(skippedCount).IsEqualTo(1);
+        await Assert.That(originalCount).IsEqualTo(2);
+        await Assert.That(streamedSum).IsEqualTo(3);
+        await Assert.That(actionSum).IsEqualTo(3);
+        await Assert.That(original.ToQueryString()).Contains("SELECT");
+    }
+
+    [Test]
+    public async Task QueryPreservesEmptyAndMultipleResultSemanticsAndCancellation()
+    {
+        // Arrange
+        await using SqliteConnection connection = new("Data Source=:memory:");
+        await connection.OpenAsync();
+        await using RelationalContext context = CreateContext(connection);
+        await context.Database.EnsureCreatedAsync();
+        context.AddRange(new Category { Id = 1, Name = "Books", IsActive = true },
+            new Category { Id = 2, Name = "Music", IsActive = true });
+        await context.SaveChangesAsync();
+        IReadDataRepository<Category, int> repository = new ReadDataRepository<Category, int>(context);
+        IRepositoryResultQuery<int> ids = repository.Query().Select(item => item.Id);
+        using CancellationTokenSource cancellation = new();
+        cancellation.Cancel();
+
+        // Act
+        int first = await ids.Where(id => id == 1).FirstAsync();
+        int matchingFirst = await ids.FirstAsync(id => id == 2);
+        int firstDefault = await ids.Where(id => id == 99).FirstOrDefaultAsync();
+        int matchingFirstDefault = await ids.FirstOrDefaultAsync(id => id == 99);
+        int singleDefault = await ids.Where(id => id == 99).SingleOrDefaultAsync();
+        int matchingSingleDefault = await ids.SingleOrDefaultAsync(id => id == 99);
+        Category? missing = await repository.Query().FirstOrDefaultAsync(item => item.Id == 99);
+
+        // Assert
+        await Assert.That(first).IsEqualTo(1);
+        await Assert.That(matchingFirst).IsEqualTo(2);
+        await Assert.That(firstDefault).IsEqualTo(0);
+        await Assert.That(matchingFirstDefault).IsEqualTo(0);
+        await Assert.That(singleDefault).IsEqualTo(0);
+        await Assert.That(matchingSingleDefault).IsEqualTo(0);
+        await Assert.That(missing).IsNull();
+        await Assert.That(async () => await ids.SingleAsync()).Throws<System.InvalidOperationException>();
+        await Assert.That(async () => await ids.Where(id => id == 99).FirstAsync()).Throws<System.InvalidOperationException>();
+        await Assert.That(async () => await ids.CountAsync(cancellation.Token)).Throws<System.OperationCanceledException>();
+        await Assert.That(async () => await ids.ToListAsync(cancellation.Token)).Throws<System.OperationCanceledException>();
+    }
+
+    public sealed record CategorySummary(int Id, string Name);
+
     [Test]
     [Arguments(false)]
     [Arguments(true)]

@@ -116,6 +116,25 @@ For collections, the `ThenInclude` lambda receives an element. Chain further `In
 
 Queries preserve the repository's tracking behavior and configured query filters. Execute them while the repository context is alive. The infrastructure project that registers the context still needs `DataRepositoryCore` and an EF Core provider; application services using these abstractions need no EF Core types or extension methods.
 
+Use `Query()` to start a query without an include:
+
+```csharp
+int count = await users.Query()
+    .Where(user => user.IsActive)
+    .CountAsync(cancellationToken);
+
+List<string> names = await users.Query()
+    .Select(user => user.Name)
+    .Distinct()
+    .ToListAsync(cancellationToken);
+```
+
+The query interfaces support `AnyAsync`, `AllAsync`, `CountAsync`, `LongCountAsync`, `ContainsAsync`, `FirstAsync`, `FirstOrDefaultAsync`, `SingleAsync`, `SingleOrDefaultAsync`, `ToListAsync`, `ToArrayAsync`, `ForEachAsync`, and `AsAsyncEnumerable`. Checks, counts, and first/single methods accept predicates where applicable. Async execution methods accept cancellation tokens; use `WithCancellation(token)` when enumerating `AsAsyncEnumerable()`.
+
+Compose queries with `Where`, `Skip`, `Take`, and `Distinct`. Ordering methods are not exposed; predictable paging requires ordering established by the underlying query. `Select` returns `IRepositoryResultQuery<TResult>`, supporting value types, nullable values, anonymous types, and DTOs. This result interface supports further composition and execution, but does not expose includes. `MinAsync` and `MaxAsync` support both direct results and selectors; `SumAsync` and `AverageAsync` accept selectors for `int`, `long`, `float`, `double`, `decimal`, and their nullable forms. For example, a projected integer query can use `SumAsync(value => value, cancellationToken)`.
+
+Database execution uses asynchronous methods; synchronous execution methods such as `Count()` are not exposed. Translation and aggregate support depend on the configured EF Core provider. Scalar projections do not track entities; projections containing entities retain the source query's tracking behavior. `ToQueryString()` is available for diagnostics.
+
 ## Building and testing
 
 Install a compatible .NET 11 SDK, then run `dotnet build DataRepositoryCore.sln` and `dotnet test DataRepositoryCore.sln` from the repository root.
