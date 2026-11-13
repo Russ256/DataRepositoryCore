@@ -91,6 +91,64 @@ Use `LoadAsync(entity, item => item.Children)` for a collection navigation or `L
 
 `FindAsync` is available on `IDataRepository`. It looks up an entity by its EF Core primary key and returns `null` when no entity is found. The entity must have a single-property primary key whose type matches `TKey`; composite primary keys are not supported. EF Core may return an entity already tracked by the context without querying the database.
 
+## Eager loading without EF Core references
+
+Application services can reference only `DataRepositoryCore.Abstractions` and use `Include` with asynchronous query methods:
+
+```csharp
+User user = await users
+    .Include(user => user.Tenant)
+    .SingleAsync(user => user.Id == userId, cancellationToken);
+```
+
+Here `users` is an `IReadDataRepository<User, Guid>` (use your entity's key type). `Include` accepts reference and collection navigations and returns `IIncludableRepositoryQuery<TEntity, TProperty>`, which also supports all `IRepositoryQuery<TEntity>` operations. Use `ThenInclude` immediately after `Include` or another `ThenInclude` to load nested navigations:
+
+```csharp
+User user = await users
+    .Include(user => user.Tenant)
+        .ThenInclude(tenant => tenant.Settings)
+    .Include(user => user.Roles)
+        .ThenInclude(role => role.Permissions)
+    .SingleAsync(user => user.Id == userId, cancellationToken);
+```
+
+For collections, the `ThenInclude` lambda receives an element. Chain further `Include` or `Where` calls, then execute with `SingleAsync`, `SingleOrDefaultAsync`, `ToListAsync`, or `ToArrayAsync`. Both single-result methods also accept a predicate. Each composition call returns a new query without changing the repository or earlier queries. These methods require only the `DataRepositoryCore` namespace, with no EF Core imports.
+
+Queries preserve the repository's tracking behavior and configured query filters. Execute them while the repository context is alive. The infrastructure project that registers the context still needs `DataRepositoryCore` and an EF Core provider; application services using these abstractions need no EF Core types or extension methods.
+
+Use `Query()` to start a query without an include:
+
+```csharp
+int count = await users.Query()
+    .Where(user => user.IsActive)
+    .CountAsync(cancellationToken);
+
+List<string> names = await users.Query()
+    .Select(user => user.Name)
+    .Distinct()
+    .ToListAsync(cancellationToken);
+```
+
+The query interfaces support `AnyAsync`, `AllAsync`, `CountAsync`, `LongCountAsync`, `ContainsAsync`, `FirstAsync`, `FirstOrDefaultAsync`, `SingleAsync`, `SingleOrDefaultAsync`, `ToListAsync`, `ToArrayAsync`, `ForEachAsync`, and `AsAsyncEnumerable`. Checks, counts, and first/single methods accept predicates where applicable. Async execution methods accept cancellation tokens; use `WithCancellation(token)` when enumerating `AsAsyncEnumerable()`.
+
+Compose queries with `Where`, `Skip`, `Take`, and `Distinct`. `Select` returns `IRepositoryResultQuery<TResult>`, supporting value types, nullable values, anonymous types, and DTOs. This result interface supports further composition and execution, but does not expose includes. `MinAsync` and `MaxAsync` support both direct results and selectors; `SumAsync` and `AverageAsync` accept selectors for `int`, `long`, `float`, `double`, `decimal`, and their nullable forms. For example, a projected integer query can use `SumAsync(value => value, cancellationToken)`.
+
+Use `OrderBy` or `OrderByDescending` followed by `ThenBy` or `ThenByDescending` for additional sort keys. Ordering works on entity queries and after projection into scalar values or DTOs:
+
+```csharp
+List<User> page = await users.Query()
+    .OrderBy(user => user.LastName)
+    .ThenBy(user => user.Id)
+    .Include(user => user.Tenant)
+    .Skip(20)
+    .Take(10)
+    .ToListAsync(cancellationToken);
+```
+
+Entity ordering returns `IOrderedRepositoryQuery<TEntity>`; projected ordering returns `IOrderedRepositoryResultQuery<TResult>`. `ThenBy` methods are available on these ordered interfaces. Apply additional sort keys before further composition such as `Include`, `Where`, or `Skip`. Calling `OrderBy` again replaces previous sorting. Each sorting call creates a new query, preserving other branches. For deterministic paging, order before `Skip`/`Take` and end with a unique sort key such as `Id`.
+
+Database execution uses asynchronous methods; synchronous execution methods such as `Count()` are not exposed. Translation and aggregate support depend on the configured EF Core provider. Scalar projections do not track entities; projections containing entities retain the source query's tracking behavior. `ToQueryString()` is available for diagnostics.
+
 ## Building and testing
 
 Install a compatible .NET 11 SDK, then run `dotnet build DataRepositoryCore.sln` and `dotnet test DataRepositoryCore.sln` from the repository root.

@@ -25,6 +25,9 @@ public interface IReadDataRepository<TEntity, TKey>
     /// <summary>Returns a composable query for entities.</summary>
     IQueryable<TEntity> AsQueryable();
 
+    /// <summary>Returns a composable query that needs no EF Core extension methods.</summary>
+    IRepositoryQuery<TEntity> Query();
+
     /// <summary>Calculates the average of the selected integer values.</summary>
     Task<double> AverageAsync(Expression<Func<TEntity, int>> selector, CancellationToken cancellationToken = default);
 
@@ -57,6 +60,9 @@ public interface IReadDataRepository<TEntity, TKey>
 
     /// <summary>Returns a query that ignores configured query filters.</summary>
     IQueryable<TEntity> IgnoreQueryFilters();
+
+    /// <summary>Returns a composable query including a reference or collection navigation.</summary>
+    IIncludableRepositoryQuery<TEntity, TProperty> Include<TProperty>(Expression<Func<TEntity, TProperty>> navigation);
 
     /// <summary>Explicitly loads a collection navigation for the specified entity.</summary>
     /// <remarks>The default EF Core implementation can load navigations for a detached entity without attaching it. The repository context must still be usable.</remarks>
