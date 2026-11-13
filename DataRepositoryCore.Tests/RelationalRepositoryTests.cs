@@ -8,6 +8,74 @@ using Microsoft.EntityFrameworkCore;
 
 public class RelationalRepositoryTests
 {
+    [Test]
+    public async Task IncludeLoadsNavigationsWithoutTrackingOrChangingOtherQueries()
+    {
+        // Arrange
+        await using SqliteConnection connection = new("Data Source=:memory:");
+        await connection.OpenAsync();
+        await using RelationalContext context = CreateContext(connection);
+        await context.Database.EnsureCreatedAsync();
+        context.AddRange(
+            new Category { Id = 1, Name = "Books", IsActive = true,
+                Products = [new Product { Id = 2, Name = "Novel" }] },
+            new Category { Id = 3, Name = "Music", IsActive = true },
+            new Category { Id = 4, Name = "Hidden", IsActive = false });
+        await context.SaveChangesAsync();
+        context.ChangeTracker.Clear();
+        IReadDataRepository<Category, int> categories = new ReadDataRepository<Category, int>(context);
+        IReadDataRepository<Product, int> products = new ReadDataRepository<Product, int>(context);
+
+        // Act
+        IRepositoryQuery<Category> query = categories.Include(category => category.Products);
+        IRepositoryQuery<Category> filtered = query.Where(category => category.Id == 1);
+        Category category = await filtered.SingleAsync();
+        Category[] all = await query.ToArrayAsync();
+        List<Category> list = await filtered.ToListAsync();
+        Product product = await products.Include(item => item.Category)
+            .Include(item => item.Category).SingleAsync(item => item.Id == 2);
+        Category plain = await categories.SingleAsync(item => item.Id == 1);
+        Category? missing = await query.SingleOrDefaultAsync(item => item.Id == 99);
+        Category? filteredSingle = await filtered.SingleOrDefaultAsync();
+
+        // Assert
+        await Assert.That(category.Products.Single().Name).IsEqualTo("Novel");
+        await Assert.That(product.Category!.Name).IsEqualTo("Books");
+        await Assert.That(all.Length).IsEqualTo(2);
+        await Assert.That(list.Count).IsEqualTo(1);
+        await Assert.That(plain.Products.Count).IsEqualTo(0);
+        await Assert.That(missing).IsNull();
+        await Assert.That(filteredSingle!.Id).IsEqualTo(1);
+        await Assert.That(context.ChangeTracker.Entries().Count()).IsEqualTo(0);
+    }
+
+    [Test]
+    public async Task IncludePreservesWriteRepositoryTrackingAndPersistsNavigationChanges()
+    {
+        // Arrange
+        await using SqliteConnection connection = new("Data Source=:memory:");
+        await connection.OpenAsync();
+        await using RelationalContext context = CreateContext(connection);
+        await context.Database.EnsureCreatedAsync();
+        context.Add(new Category { Id = 1, Name = "Books", IsActive = true,
+            Products = [new Product { Id = 2, Name = "Novel" }] });
+        await context.SaveChangesAsync();
+        context.ChangeTracker.Clear();
+        IDataRepository<Category, int> repository = new DataRepository<Category, int>(context);
+
+        // Act
+        Category category = await repository.Include(item => item.Products).SingleAsync();
+        int trackedCount = context.ChangeTracker.Entries().Count();
+        category.Products.Single().Name = "Updated";
+        await context.SaveChangesAsync();
+        await using RelationalContext observer = CreateContext(connection);
+        Product persisted = await new ReadDataRepository<Product, int>(observer).SingleAsync();
+
+        // Assert
+        await Assert.That(trackedCount).IsEqualTo(2);
+        await Assert.That(persisted.Name).IsEqualTo("Updated");
+    }
+
     private static RelationalContext CreateContext(SqliteConnection connection) => new(
         new DbContextOptionsBuilder<RelationalContext>().UseSqlite(connection).Options);
 

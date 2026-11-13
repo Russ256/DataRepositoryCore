@@ -91,6 +91,20 @@ Use `LoadAsync(entity, item => item.Children)` for a collection navigation or `L
 
 `FindAsync` is available on `IDataRepository`. It looks up an entity by its EF Core primary key and returns `null` when no entity is found. The entity must have a single-property primary key whose type matches `TKey`; composite primary keys are not supported. EF Core may return an entity already tracked by the context without querying the database.
 
+## Eager loading without EF Core references
+
+Application services can reference only `DataRepositoryCore.Abstractions` and use `Include` with asynchronous query methods:
+
+```csharp
+User user = await users
+    .Include(user => user.Tenant)
+    .SingleAsync(user => user.Id == userId, cancellationToken);
+```
+
+Here `users` is an `IReadDataRepository<User, Guid>` (use your entity's key type). `Include` accepts reference and collection navigations and returns `IRepositoryQuery<TEntity>`. Chain further `Include` or `Where` calls, then execute with `SingleAsync`, `SingleOrDefaultAsync`, `ToListAsync`, or `ToArrayAsync`. Both single-result methods also accept a predicate. Each composition call returns a new query without changing the repository or earlier queries. `ThenInclude` is not currently exposed.
+
+Queries preserve the repository's tracking behavior and configured query filters. Execute them while the repository context is alive. The infrastructure project that registers the context still needs `DataRepositoryCore` and an EF Core provider; application services using these abstractions need no EF Core types or extension methods.
+
 ## Building and testing
 
 Install a compatible .NET 11 SDK, then run `dotnet build DataRepositoryCore.sln` and `dotnet test DataRepositoryCore.sln` from the repository root.

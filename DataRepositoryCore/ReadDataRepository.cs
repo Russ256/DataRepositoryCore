@@ -130,6 +130,12 @@ public class ReadDataRepository<TEntity, TKey> : IReadDataRepository<TEntity, TK
     }
 
     /// <inheritdoc />
+    public IRepositoryQuery<TEntity> Include<TProperty>(Expression<Func<TEntity, TProperty>> navigation)
+    {
+        return new RepositoryQuery<TEntity>(AsQueryable().Include(navigation));
+    }
+
+    /// <inheritdoc />
     public Task LoadAsync<TProperty>(TEntity entity, Expression<Func<TEntity, IEnumerable<TProperty>>> propertyExpression, CancellationToken cancellationToken = default)
                                                                 where TProperty : class
     {
