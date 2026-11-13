@@ -10,6 +10,92 @@ using Microsoft.EntityFrameworkCore;
 public class RelationalRepositoryTests
 {
     [Test]
+    [Arguments(false)]
+    [Arguments(true)]
+    public async Task OrderingSupportsIncludesPagingAndIndependentSortBranches(bool tracked)
+    {
+        // Arrange
+        await using SqliteConnection connection = new("Data Source=:memory:");
+        await connection.OpenAsync();
+        await using RelationalContext context = CreateContext(connection);
+        await context.Database.EnsureCreatedAsync();
+        context.AddRange(new Category { Id = 1, Name = "A", IsActive = true },
+            new Category { Id = 2, Name = "B", IsActive = true },
+            new Category { Id = 3, Name = "A", IsActive = true,
+                Products = [new Product { Id = 10, Name = "Novel" }] },
+            new Category { Id = 4, Name = "B", IsActive = true },
+            new Category { Id = 5, Name = "Hidden", IsActive = false });
+        await context.SaveChangesAsync();
+        context.ChangeTracker.Clear();
+        IReadDataRepository<Category, int> repository = tracked
+            ? new DataRepository<Category, int>(context) : new ReadDataRepository<Category, int>(context);
+
+        // Act
+        IOrderedRepositoryQuery<Category> original = repository.Query().OrderBy(item => item.Name);
+        IOrderedRepositoryQuery<Category> descendingBranch = original.ThenByDescending(item => item.Id);
+        int[] descendingIds = await descendingBranch.Select(item => item.Id).ToArrayAsync();
+        int[] ascendingIds = await original.ThenBy(item => item.Id).Select(item => item.Id).ToArrayAsync();
+        List<Category> page = await descendingBranch.Include(item => item.Products)
+            .Skip(0).Take(1).ToListAsync();
+        int trackedCount = context.ChangeTracker.Entries().Count();
+        int[] descendingNames = await repository.Include(item => item.Products)
+            .OrderByDescending(item => item.Name).ThenBy(item => item.Id)
+            .Select(item => item.Id).ToArrayAsync();
+        int[] replacedOrder = await descendingBranch.OrderByDescending(item => item.Id)
+            .Select(item => item.Id).ToArrayAsync();
+        int[] nextPage = await descendingBranch.Skip(1).Take(2).Select(item => item.Id).ToArrayAsync();
+
+        // Assert
+        await Assert.That(string.Join(",", descendingIds)).IsEqualTo("3,1,4,2");
+        await Assert.That(string.Join(",", ascendingIds)).IsEqualTo("1,3,2,4");
+        await Assert.That(page.Single().Id).IsEqualTo(3);
+        await Assert.That(page.Single().Products.Single().Name).IsEqualTo("Novel");
+        await Assert.That(trackedCount).IsEqualTo(tracked ? 2 : 0);
+        await Assert.That(string.Join(",", descendingNames)).IsEqualTo("2,4,1,3");
+        await Assert.That(string.Join(",", replacedOrder)).IsEqualTo("4,3,2,1");
+        await Assert.That(string.Join(",", nextPage)).IsEqualTo("1,4");
+    }
+
+    [Test]
+    public async Task OrderingSupportsScalarAndDtoProjectionsAndMultipleSortKeys()
+    {
+        // Arrange
+        await using SqliteConnection connection = new("Data Source=:memory:");
+        await connection.OpenAsync();
+        await using RelationalContext context = CreateContext(connection);
+        await context.Database.EnsureCreatedAsync();
+        context.AddRange(new Category { Id = 1, Name = "A", IsActive = true },
+            new Category { Id = 2, Name = "B", IsActive = true },
+            new Category { Id = 3, Name = "A", IsActive = true },
+            new Category { Id = 4, Name = "B", IsActive = true });
+        await context.SaveChangesAsync();
+        context.ChangeTracker.Clear();
+        IReadDataRepository<Category, int> repository = new ReadDataRepository<Category, int>(context);
+
+        // Act
+        IRepositoryResultQuery<int> scalars = repository.Query().Select(item => item.Id);
+        IOrderedRepositoryResultQuery<int> ordered = scalars.OrderBy(id => id % 2);
+        int[] scalarIds = await ordered.ThenByDescending(id => id).ToArrayAsync();
+        int[] ascendingBranch = await ordered.ThenBy(id => id).ToArrayAsync();
+        int[] replaced = await ordered.OrderByDescending(id => id).ToArrayAsync();
+        int[] dtoIds = await repository.Query().Select(item => new { item.Id, item.Name })
+            .OrderByDescending(item => item.Name).ThenBy(item => item.Id % 2)
+            .ThenByDescending(item => item.Id).Skip(1).Take(2)
+            .Select(item => item.Id).ToArrayAsync();
+        IOrderedRepositoryResultQuery<Category> entityAsResult = repository.Query().OrderBy(item => item.Name);
+        int[] throughResultInterface = await entityAsResult.ThenByDescending(item => item.Id)
+            .Select(item => item.Id).ToArrayAsync();
+
+        // Assert
+        await Assert.That(string.Join(",", scalarIds)).IsEqualTo("4,2,3,1");
+        await Assert.That(string.Join(",", ascendingBranch)).IsEqualTo("2,4,1,3");
+        await Assert.That(string.Join(",", replaced)).IsEqualTo("4,3,2,1");
+        await Assert.That(string.Join(",", dtoIds)).IsEqualTo("2,3");
+        await Assert.That(string.Join(",", throughResultInterface)).IsEqualTo("3,1,4,2");
+        await Assert.That(context.ChangeTracker.Entries().Count()).IsEqualTo(0);
+    }
+
+    [Test]
     public async Task QuerySupportsChecksCountsAndScalarProjection()
     {
         // Arrange

@@ -7,6 +7,12 @@ using System.Linq.Expressions;
 /// <typeparam name="TEntity">The entity type.</typeparam>
 public interface IRepositoryQuery<TEntity> : IRepositoryResultQuery<TEntity> where TEntity : class
 {
+    /// <summary>Orders entities by an ascending key, replacing any previous ordering.</summary>
+    new IOrderedRepositoryQuery<TEntity> OrderBy<TKey>(Expression<Func<TEntity, TKey>> keySelector);
+
+    /// <summary>Orders entities by a descending key, replacing any previous ordering.</summary>
+    new IOrderedRepositoryQuery<TEntity> OrderByDescending<TKey>(Expression<Func<TEntity, TKey>> keySelector);
+
     /// <summary>Includes a reference or collection navigation.</summary>
     IIncludableRepositoryQuery<TEntity, TProperty> Include<TProperty>(Expression<Func<TEntity, TProperty>> navigation);
 

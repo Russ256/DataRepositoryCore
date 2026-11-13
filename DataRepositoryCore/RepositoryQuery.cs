@@ -8,6 +8,16 @@ using Microsoft.EntityFrameworkCore;
 internal class RepositoryQuery<TEntity>(IQueryable<TEntity> query)
     : RepositoryResultQuery<TEntity>(query), IRepositoryQuery<TEntity> where TEntity : class
 {
+    public new IOrderedRepositoryQuery<TEntity> OrderBy<TKey>(Expression<Func<TEntity, TKey>> keySelector)
+    {
+        return new OrderedRepositoryQuery<TEntity>(Query.OrderBy(keySelector));
+    }
+
+    public new IOrderedRepositoryQuery<TEntity> OrderByDescending<TKey>(Expression<Func<TEntity, TKey>> keySelector)
+    {
+        return new OrderedRepositoryQuery<TEntity>(Query.OrderByDescending(keySelector));
+    }
+
     public IIncludableRepositoryQuery<TEntity, TProperty> Include<TProperty>(Expression<Func<TEntity, TProperty>> navigation)
     {
         return new IncludableRepositoryQuery<TEntity, TProperty>(Query.Include(navigation));

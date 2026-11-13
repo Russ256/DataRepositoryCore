@@ -131,7 +131,21 @@ List<string> names = await users.Query()
 
 The query interfaces support `AnyAsync`, `AllAsync`, `CountAsync`, `LongCountAsync`, `ContainsAsync`, `FirstAsync`, `FirstOrDefaultAsync`, `SingleAsync`, `SingleOrDefaultAsync`, `ToListAsync`, `ToArrayAsync`, `ForEachAsync`, and `AsAsyncEnumerable`. Checks, counts, and first/single methods accept predicates where applicable. Async execution methods accept cancellation tokens; use `WithCancellation(token)` when enumerating `AsAsyncEnumerable()`.
 
-Compose queries with `Where`, `Skip`, `Take`, and `Distinct`. Ordering methods are not exposed; predictable paging requires ordering established by the underlying query. `Select` returns `IRepositoryResultQuery<TResult>`, supporting value types, nullable values, anonymous types, and DTOs. This result interface supports further composition and execution, but does not expose includes. `MinAsync` and `MaxAsync` support both direct results and selectors; `SumAsync` and `AverageAsync` accept selectors for `int`, `long`, `float`, `double`, `decimal`, and their nullable forms. For example, a projected integer query can use `SumAsync(value => value, cancellationToken)`.
+Compose queries with `Where`, `Skip`, `Take`, and `Distinct`. `Select` returns `IRepositoryResultQuery<TResult>`, supporting value types, nullable values, anonymous types, and DTOs. This result interface supports further composition and execution, but does not expose includes. `MinAsync` and `MaxAsync` support both direct results and selectors; `SumAsync` and `AverageAsync` accept selectors for `int`, `long`, `float`, `double`, `decimal`, and their nullable forms. For example, a projected integer query can use `SumAsync(value => value, cancellationToken)`.
+
+Use `OrderBy` or `OrderByDescending` followed by `ThenBy` or `ThenByDescending` for additional sort keys. Ordering works on entity queries and after projection into scalar values or DTOs:
+
+```csharp
+List<User> page = await users.Query()
+    .OrderBy(user => user.LastName)
+    .ThenBy(user => user.Id)
+    .Include(user => user.Tenant)
+    .Skip(20)
+    .Take(10)
+    .ToListAsync(cancellationToken);
+```
+
+Entity ordering returns `IOrderedRepositoryQuery<TEntity>`; projected ordering returns `IOrderedRepositoryResultQuery<TResult>`. `ThenBy` methods are available on these ordered interfaces. Apply additional sort keys before further composition such as `Include`, `Where`, or `Skip`. Calling `OrderBy` again replaces previous sorting. Each sorting call creates a new query, preserving other branches. For deterministic paging, order before `Skip`/`Take` and end with a unique sort key such as `Id`.
 
 Database execution uses asynchronous methods; synchronous execution methods such as `Count()` are not exposed. Translation and aggregate support depend on the configured EF Core provider. Scalar projections do not track entities; projections containing entities retain the source query's tracking behavior. `ToQueryString()` is available for diagnostics.
 

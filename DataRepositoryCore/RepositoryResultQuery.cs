@@ -12,6 +12,16 @@ internal class RepositoryResultQuery<T>(IQueryable<T> query) : IRepositoryResult
 {
     protected IQueryable<T> Query { get; } = query;
 
+    public IOrderedRepositoryResultQuery<T> OrderBy<TKey>(Expression<Func<T, TKey>> keySelector)
+    {
+        return new OrderedRepositoryResultQuery<T>(Query.OrderBy(keySelector));
+    }
+
+    public IOrderedRepositoryResultQuery<T> OrderByDescending<TKey>(Expression<Func<T, TKey>> keySelector)
+    {
+        return new OrderedRepositoryResultQuery<T>(Query.OrderByDescending(keySelector));
+    }
+
     public Task<bool> AnyAsync(CancellationToken cancellationToken = default)
     {
         return Query.AnyAsync(cancellationToken);

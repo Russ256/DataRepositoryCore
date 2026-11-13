@@ -11,6 +11,12 @@ using System.Threading.Tasks;
 /// <remarks>Composition creates a new query. Execute while the context is usable. Default-returning methods return default(T) when empty.</remarks>
 public interface IRepositoryResultQuery<T>
 {
+    /// <summary>Orders results by an ascending key, replacing any previous ordering.</summary>
+    IOrderedRepositoryResultQuery<T> OrderBy<TKey>(Expression<Func<T, TKey>> keySelector);
+
+    /// <summary>Orders results by a descending key, replacing any previous ordering.</summary>
+    IOrderedRepositoryResultQuery<T> OrderByDescending<TKey>(Expression<Func<T, TKey>> keySelector);
+
     /// <summary>Executes the query using AnyAsync.</summary>
     Task<bool> AnyAsync(CancellationToken cancellationToken = default);
 
