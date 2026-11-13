@@ -130,9 +130,9 @@ public class ReadDataRepository<TEntity, TKey> : IReadDataRepository<TEntity, TK
     }
 
     /// <inheritdoc />
-    public IRepositoryQuery<TEntity> Include<TProperty>(Expression<Func<TEntity, TProperty>> navigation)
+    public IIncludableRepositoryQuery<TEntity, TProperty> Include<TProperty>(Expression<Func<TEntity, TProperty>> navigation)
     {
-        return new RepositoryQuery<TEntity>(AsQueryable().Include(navigation));
+        return new IncludableRepositoryQuery<TEntity, TProperty>(AsQueryable().Include(navigation));
     }
 
     /// <inheritdoc />

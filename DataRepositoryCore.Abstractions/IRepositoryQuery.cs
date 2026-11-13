@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 public interface IRepositoryQuery<TEntity> where TEntity : class
 {
     /// <summary>Includes a reference or collection navigation in the results.</summary>
-    IRepositoryQuery<TEntity> Include<TProperty>(Expression<Func<TEntity, TProperty>> navigation);
+    IIncludableRepositoryQuery<TEntity, TProperty> Include<TProperty>(Expression<Func<TEntity, TProperty>> navigation);
 
     /// <summary>Returns a query filtered by the specified predicate.</summary>
     IRepositoryQuery<TEntity> Where(Expression<Func<TEntity, bool>> predicate);

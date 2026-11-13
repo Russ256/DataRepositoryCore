@@ -59,7 +59,7 @@ public interface IReadDataRepository<TEntity, TKey>
     IQueryable<TEntity> IgnoreQueryFilters();
 
     /// <summary>Returns a composable query including a reference or collection navigation.</summary>
-    IRepositoryQuery<TEntity> Include<TProperty>(Expression<Func<TEntity, TProperty>> navigation);
+    IIncludableRepositoryQuery<TEntity, TProperty> Include<TProperty>(Expression<Func<TEntity, TProperty>> navigation);
 
     /// <summary>Explicitly loads a collection navigation for the specified entity.</summary>
     /// <remarks>The default EF Core implementation can load navigations for a detached entity without attaching it. The repository context must still be usable.</remarks>

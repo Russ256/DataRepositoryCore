@@ -9,6 +9,52 @@ using Microsoft.EntityFrameworkCore;
 public class RelationalRepositoryTests
 {
     [Test]
+    [Arguments(false)]
+    [Arguments(true)]
+    public async Task ThenIncludeLoadsNestedReferencesAndCollectionsWithRepositoryTracking(bool tracked)
+    {
+        // Arrange
+        await using SqliteConnection connection = new("Data Source=:memory:");
+        await connection.OpenAsync();
+        await using RelationalContext context = CreateContext(connection);
+        await context.Database.EnsureCreatedAsync();
+        context.Add(new Category { Id = 1, Name = "Books", IsActive = true,
+            Products = [new Product { Id = 2, Name = "Novel", Manufacturer = new Manufacturer
+            {
+                Id = 3, Country = new Country { Id = 4, Name = "UK",
+                    Offices = [new Office { Id = 5, Rooms = [new Room { Id = 6, Name = "Reading room" }] }] }
+            } }] });
+        await context.SaveChangesAsync();
+        context.ChangeTracker.Clear();
+        IReadDataRepository<Category, int> categories = tracked
+            ? new DataRepository<Category, int>(context) : new ReadDataRepository<Category, int>(context);
+        IReadDataRepository<Product, int> products = tracked
+            ? new DataRepository<Product, int>(context) : new ReadDataRepository<Product, int>(context);
+
+        // Act
+        IIncludableRepositoryQuery<Category, List<Product>> original = categories.Include(item => item.Products);
+        Category nested = await original.ThenInclude(item => item.Manufacturer)
+            .ThenInclude(item => item!.Country).Where(item => item.Id == 1).SingleAsync();
+        int trackedCount = context.ChangeTracker.Entries().Count();
+        context.ChangeTracker.Clear();
+        Category shallow = await original.SingleAsync();
+        context.ChangeTracker.Clear();
+        Product referenceThenCollection = await products.Include(item => item.Manufacturer)
+            .ThenInclude(item => item!.Country).ThenInclude(item => item!.Offices)
+            .ThenInclude(item => item.Rooms).Include(item => item.Category)
+            .SingleAsync(item => item.Id == 2);
+
+        // Assert
+        await Assert.That(nested.Products.Single().Manufacturer!.Country!.Name).IsEqualTo("UK");
+        await Assert.That(trackedCount).IsEqualTo(tracked ? 4 : 0);
+        await Assert.That(shallow.Products.Single().Manufacturer).IsNull();
+        await Assert.That(referenceThenCollection.Manufacturer!.Country!.Offices.Single()
+            .Rooms.Single().Name).IsEqualTo("Reading room");
+        await Assert.That(referenceThenCollection.Category!.Name).IsEqualTo("Books");
+        await Assert.That(context.ChangeTracker.Entries().Count()).IsEqualTo(tracked ? 6 : 0);
+    }
+
+    [Test]
     public async Task IncludeLoadsNavigationsWithoutTrackingOrChangingOtherQueries()
     {
         // Arrange
@@ -280,6 +326,36 @@ public class RelationalRepositoryTests
         public string Name { get; set; } = string.Empty;
         public int CategoryId { get; set; }
         public Category? Category { get; set; }
+        public int? ManufacturerId { get; set; }
+        public Manufacturer? Manufacturer { get; set; }
+    }
+
+    public sealed class Manufacturer : IEntity<int>
+    {
+        public int Id { get; set; }
+        public int? CountryId { get; set; }
+        public Country? Country { get; set; }
+        public List<Product> Products { get; set; } = [];
+    }
+
+    public sealed class Country : IEntity<int>
+    {
+        public int Id { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public List<Manufacturer> Manufacturers { get; set; } = [];
+        public List<Office> Offices { get; set; } = [];
+    }
+
+    public sealed class Office : IEntity<int>
+    {
+        public int Id { get; set; }
+        public List<Room> Rooms { get; set; } = [];
+    }
+
+    public sealed class Room : IEntity<int>
+    {
+        public int Id { get; set; }
+        public string Name { get; set; } = string.Empty;
     }
 
     private sealed class AutoIncludeContext(DbContextOptions<AutoIncludeContext> options) : DataContext(options)

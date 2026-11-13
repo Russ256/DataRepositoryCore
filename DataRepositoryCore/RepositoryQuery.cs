@@ -8,12 +8,12 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 
-internal sealed class RepositoryQuery<TEntity>(IQueryable<TEntity> query) : IRepositoryQuery<TEntity>
+internal class RepositoryQuery<TEntity>(IQueryable<TEntity> query) : IRepositoryQuery<TEntity>
     where TEntity : class
 {
-    public IRepositoryQuery<TEntity> Include<TProperty>(Expression<Func<TEntity, TProperty>> navigation)
+    public IIncludableRepositoryQuery<TEntity, TProperty> Include<TProperty>(Expression<Func<TEntity, TProperty>> navigation)
     {
-        return new RepositoryQuery<TEntity>(query.Include(navigation));
+        return new IncludableRepositoryQuery<TEntity, TProperty>(query.Include(navigation));
     }
 
     public IRepositoryQuery<TEntity> Where(Expression<Func<TEntity, bool>> predicate)

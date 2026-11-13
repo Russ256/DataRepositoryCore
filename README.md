@@ -101,7 +101,18 @@ User user = await users
     .SingleAsync(user => user.Id == userId, cancellationToken);
 ```
 
-Here `users` is an `IReadDataRepository<User, Guid>` (use your entity's key type). `Include` accepts reference and collection navigations and returns `IRepositoryQuery<TEntity>`. Chain further `Include` or `Where` calls, then execute with `SingleAsync`, `SingleOrDefaultAsync`, `ToListAsync`, or `ToArrayAsync`. Both single-result methods also accept a predicate. Each composition call returns a new query without changing the repository or earlier queries. `ThenInclude` is not currently exposed.
+Here `users` is an `IReadDataRepository<User, Guid>` (use your entity's key type). `Include` accepts reference and collection navigations and returns `IIncludableRepositoryQuery<TEntity, TProperty>`, which also supports all `IRepositoryQuery<TEntity>` operations. Use `ThenInclude` immediately after `Include` or another `ThenInclude` to load nested navigations:
+
+```csharp
+User user = await users
+    .Include(user => user.Tenant)
+        .ThenInclude(tenant => tenant.Settings)
+    .Include(user => user.Roles)
+        .ThenInclude(role => role.Permissions)
+    .SingleAsync(user => user.Id == userId, cancellationToken);
+```
+
+For collections, the `ThenInclude` lambda receives an element. Chain further `Include` or `Where` calls, then execute with `SingleAsync`, `SingleOrDefaultAsync`, `ToListAsync`, or `ToArrayAsync`. Both single-result methods also accept a predicate. Each composition call returns a new query without changing the repository or earlier queries. These methods require only the `DataRepositoryCore` namespace, with no EF Core imports.
 
 Queries preserve the repository's tracking behavior and configured query filters. Execute them while the repository context is alive. The infrastructure project that registers the context still needs `DataRepositoryCore` and an EF Core provider; application services using these abstractions need no EF Core types or extension methods.
 
